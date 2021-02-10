@@ -20,7 +20,10 @@ pub async fn rename(opts: &super::cli::Cli, replacer: &super::replace::Replacer)
         .map(|file| future::ready((file.clone(), replacer.replace(&file).unwrap())))
         .for_each(async move |file_futures| {
             let (old_file, new_file) = file_futures.await;
-            println!("{} {} {}", old_file.to_str().unwrap().red(), "->".blue(), new_file.to_str().unwrap().green())
+            println!("{} {} {}", old_file.to_str().unwrap().red(), "->".blue(), new_file.to_str().unwrap().green());
+            if opts.run {
+                fs::rename(old_file, new_file).await.unwrap();
+            }
         })
         .await;
     
