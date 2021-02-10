@@ -1,0 +1,19 @@
+[package]
+name = "frs"
+version = "0.1.0"
+authors = ["ZSchoen <dev@zschoen.dev>"]
+edition = "2018"
+readme = "README.md"
+keywords = ["rename", "find", "regex"]
+categories = ["command-line-utilities", "text-processing", "development-tools"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+futures = "0.3"
+async-std = { version = "1.9", features = ["attributes"] }
+regex = "1.4"
+some-error = "0.5"
+structopt = "0.3"
+colored = "2.0"
+
