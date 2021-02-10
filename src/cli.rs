@@ -1,17 +1,15 @@
-use structopt::{clap::AppSettings, StructOpt};
 use async_std::path::PathBuf;
+use structopt::{clap::AppSettings, StructOpt};
 
 #[derive(Debug, StructOpt)]
-#[structopt(
-    setting(AppSettings::ColoredHelp),
-)]
+#[structopt(setting(AppSettings::ColoredHelp))]
 pub struct Cli {
-    #[structopt(short="n", long)]
+    #[structopt(short = "n", long)]
     pub dry_run: bool,
     #[structopt(short, long)]
     pub run: bool,
 
-    #[structopt(short="T", long)]
+    #[structopt(short = "T", long)]
     pub traverse_tree: bool,
 
     #[structopt(short, long)]
@@ -23,14 +21,14 @@ pub struct Cli {
     #[structopt(short, long)]
     pub symlink: bool,
 
-    #[structopt(short="i", long)]
+    #[structopt(short = "i", long)]
     pub case_insensetive: bool,
 
     pub search_pattern: String,
     pub replace_pattern: String,
 
     #[structopt(default_value = ".")]
-    pub base_path: PathBuf, 
+    pub base_path: PathBuf,
 }
 
 impl Cli {
@@ -40,10 +38,27 @@ impl Cli {
         if self.run && self.dry_run {
             return Err("run and dry-run flag specified".to_string());
         }
-        match std::env::var(do_var_name).unwrap_or("run".to_string()).as_str() {
-            "run" => if !self.dry_run {self.run = true},
-            "dry-run" => if !self.dry_run {self.run = true},
-            invalid_do => return Err(format!("Unknown content '{}' of environment varaiable '{}'", invalid_do, do_var_name).to_string()),
+        match std::env::var(do_var_name)
+            .unwrap_or("run".to_string())
+            .as_str()
+        {
+            "run" => {
+                if !self.dry_run {
+                    self.run = true
+                }
+            }
+            "dry-run" => {
+                if !self.dry_run {
+                    self.dry_run = true
+                }
+            }
+            invalid_do => {
+                return Err(format!(
+                    "Unknown content '{}' of environment varaiable '{}'",
+                    invalid_do, do_var_name
+                )
+                .to_string())
+            }
         }
 
         // if no type is selected, all are selected
