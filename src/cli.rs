@@ -9,6 +9,9 @@ pub struct Cli {
     #[structopt(short, long)]
     pub run: bool,
 
+    #[structopt(short, long, parse(from_occurrences))]
+    pub verbose: u8,
+
     #[structopt(short = "T", long)]
     pub traverse_tree: bool,
 
@@ -39,7 +42,7 @@ impl Cli {
             return Err("run and dry-run flag specified".to_string());
         }
         match std::env::var(do_var_name)
-            .unwrap_or("run".to_string())
+            .unwrap_or("dry-run".to_string())
             .as_str()
         {
             "run" => {
@@ -60,6 +63,9 @@ impl Cli {
                 .to_string())
             }
         }
+
+        // dry-run sets automatically a minimal verbosity of one
+        self.verbose = self.verbose.max(self.dry_run as u8);
 
         // if no type is selected, all are selected
         let no_type_selected = !(self.file || self.directory || self.symlink);
