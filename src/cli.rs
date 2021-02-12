@@ -43,6 +43,7 @@ pub struct Cli {
 }
 
 impl Cli {
+    /// does all the automations after clap
     pub fn post_automations(&mut self) -> Result<(), String> {
         self.set_operation_mode()?;
         self.set_verbosity();
@@ -50,7 +51,7 @@ impl Cli {
         Ok(())
     }
 
-    // checks and changes the running option according the environment varaiable
+    /// checks and changes the running option according the environment varaiable
     fn set_operation_mode(&mut self) -> Result<(), String> {
         let do_var_name = "FRS_DEFAULT_OP";
         if self.run && self.dry_run {
@@ -82,12 +83,12 @@ impl Cli {
         Ok(())
     }
 
-    // dry-run sets automatically a minimal verbosity of one
+    /// dry-run sets automatically a minimal verbosity of one
     fn set_verbosity(&mut self) {
         self.verbose = self.verbose.max(self.dry_run as u8);
     }
 
-    // if no type is selected, all are selected
+    /// if no type is selected, all are selected
     fn set_types(&mut self) {
         let no_type_selected = !(self.file || self.directory || self.symlink);
         self.file |= no_type_selected;
