@@ -10,7 +10,7 @@ use colored::*;
 #[async_std::main]
 async fn main() {
     let mut cli_opts = cli::Cli::from_args();
-    if let Err(error) = cli_opts.use_env() {
+    if let Err(error) = cli_opts.post_automations() {
         println!("{} {}!", "Error:".bright_red(), error);
         return;
     }
