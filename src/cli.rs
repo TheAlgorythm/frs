@@ -16,6 +16,9 @@ pub struct Cli {
     #[structopt(short, long, parse(from_occurrences))]
     pub verbose: u8,
 
+    #[structopt(short, long)]
+    pub continue_on_error: bool,
+
     /// TODO
     #[structopt(short = "T", long)]
     pub traverse_tree: bool,

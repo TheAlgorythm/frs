@@ -22,5 +22,8 @@ async fn main() {
         }
     };
 
-    fs::rename(&cli_opts, &replacer).await;
+    if let Err(error) = fs::rename(&cli_opts, &replacer).await {
+        println!("{} {}!", "Error:".bright_red(), error);
+        return;
+    }
 }
