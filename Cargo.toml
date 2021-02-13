@@ -3,11 +3,13 @@ name = "frs"
 version = "0.1.0"
 authors = ["ZSchoen <dev@zschoen.dev>"]
 edition = "2018"
+license = "MIT"
 readme = "README.md"
-keywords = ["rename", "find", "regex"]
-categories = ["command-line-utilities", "text-processing", "development-tools"]
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+homepage = "https://zschoen.dev/projects/frs"
+repository = "https://github.com/TheAlgorythm/frs"
+description = "Rename files with RegEx patterns"
+keywords = ["rename", "find", "regex", "rename-files", "rename-directories"]
+categories = ["command-line-utilities", "filesystem", "development-tools"]
 
 [dependencies]
 futures = "0.3"

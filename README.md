@@ -1,6 +1,7 @@
 # File Rename Search 🦀
 
 ![MIT License](https://img.shields.io/github/license/TheAlgorythm/frs?style=for-the-badge)
+![Workflow Status](https://img.shields.io/github/workflow/status/TheAlgorythm/frs/Rust?style=for-the-badge)
 
 Rename files with RegEx patterns.
 
