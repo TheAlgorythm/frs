@@ -1,5 +1,23 @@
-use regex::{Regex, RegexBuilder};
 use async_std::path::{Path, PathBuf};
+use regex::{Regex, RegexBuilder};
+use std::fmt;
+
+#[derive(Debug)]
+pub enum Error {
+    InvalidFileName,
+    NoParent,
+    Utf8Invalid,
+}
+
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match *self {
+            Error::InvalidFileName => write!(f, "The filename is invalid"),
+            Error::NoParent => write!(f, "There is no parent"),
+            Error::Utf8Invalid => write!(f, "There is a conversion error to UTF-8"),
+        }
+    }
+}
 
 pub struct Replacer {
     search: Regex,
@@ -16,13 +34,28 @@ impl Replacer {
         })
     }
 
-    pub fn is_match(&self, file: &Path) -> Option<bool> {
-        Some(self.search.is_match(file.file_name()?.to_str()?))
+    pub fn is_match(&self, file: &Path) -> Result<bool, Error> {
+        Ok(self.search.is_match(
+            file.file_name()
+                .ok_or(Error::InvalidFileName)?
+                .to_str()
+                .ok_or(Error::Utf8Invalid)?,
+        ))
     }
 
-    pub fn replace(&self, file: &Path) -> Option<PathBuf> {
-        let mut new_path = file.parent()?.to_path_buf();
-        new_path.push(self.search.replace(file.file_name()?.to_str()?, self.replace_pattern.as_str()).into_owned());
-        Some(new_path)
+    pub fn replace(&self, file: &Path) -> Result<PathBuf, Error> {
+        let mut new_path = file.parent().ok_or(Error::NoParent)?.to_path_buf();
+        new_path.push(
+            self.search
+                .replace(
+                    file.file_name()
+                        .ok_or(Error::InvalidFileName)?
+                        .to_str()
+                        .ok_or(Error::Utf8Invalid)?,
+                    self.replace_pattern.as_str(),
+                )
+                .into_owned(),
+        );
+        Ok(new_path)
     }
 }

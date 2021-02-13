@@ -13,7 +13,6 @@ categories = ["command-line-utilities", "text-processing", "development-tools"]
 futures = "0.3"
 async-std = { version = "1.9", features = ["attributes"] }
 regex = "1.4"
-some-error = "0.5"
 structopt = "0.3"
 colored = "2.0"
 
