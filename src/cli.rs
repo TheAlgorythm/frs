@@ -71,7 +71,7 @@ impl Cli {
                 }
             }
             "DRY-RUN" => {
-                if !self.dry_run {
+                if !self.run {
                     self.dry_run = true
                 }
             }
