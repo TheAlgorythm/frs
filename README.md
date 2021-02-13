@@ -2,7 +2,7 @@
 
 ![MIT License](https://img.shields.io/github/license/TheAlgorythm/frs?style=for-the-badge)
 [![Workflow Status](https://img.shields.io/github/workflow/status/TheAlgorythm/frs/Rust?style=for-the-badge)](https://github.com/TheAlgorythm/frs/actions?query=workflow%3ARust)
-![Crates.io](https://img.shields.io/crates/v/frs?style=for-the-badge)
+[![Crates.io](https://img.shields.io/crates/v/frs?style=for-the-badge)](https://crates.io/crates/frs)
 
 Rename files with RegEx patterns.
 
