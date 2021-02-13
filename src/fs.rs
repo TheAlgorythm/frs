@@ -82,5 +82,4 @@ pub async fn rename(opts: &super::cli::Cli, replacer: &replace::Replacer) -> Res
             }
         })
         .await
-    
 }
