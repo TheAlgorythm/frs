@@ -6,7 +6,7 @@
 
 Rename files with RegEx patterns.
 
-## Use
+## Usage
 
 ```zsh
 $ frs --help
