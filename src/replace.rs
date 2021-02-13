@@ -4,17 +4,25 @@ use std::fmt;
 
 #[derive(Debug)]
 pub enum Error {
-    InvalidFileName,
-    NoParent,
-    Utf8Invalid,
+    InvalidFileName(PathBuf),
+    NoParent(PathBuf),
+    Utf8Invalid(PathBuf),
 }
 
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            Error::InvalidFileName => write!(f, "The filename is invalid"),
-            Error::NoParent => write!(f, "There is no parent"),
-            Error::Utf8Invalid => write!(f, "There is a conversion error to UTF-8"),
+            Error::InvalidFileName(ref path) => {
+                write!(f, "The filename `{}`  is invalid", path.to_string_lossy())
+            }
+            Error::NoParent(ref path) => {
+                write!(f, "There is no parent of `{}`", path.to_string_lossy())
+            }
+            Error::Utf8Invalid(ref path) => write!(
+                f,
+                "There is a conversion error in `{}` to UTF-8",
+                path.to_string_lossy()
+            ),
         }
     }
 }
@@ -37,21 +45,24 @@ impl Replacer {
     pub fn is_match(&self, file: &Path) -> Result<bool, Error> {
         Ok(self.search.is_match(
             file.file_name()
-                .ok_or(Error::InvalidFileName)?
+                .ok_or(Error::InvalidFileName(file.to_path_buf()))?
                 .to_str()
-                .ok_or(Error::Utf8Invalid)?,
+                .ok_or(Error::Utf8Invalid(PathBuf::from(file.file_name().unwrap())))?,
         ))
     }
 
     pub fn replace(&self, file: &Path) -> Result<PathBuf, Error> {
-        let mut new_path = file.parent().ok_or(Error::NoParent)?.to_path_buf();
+        let mut new_path = file
+            .parent()
+            .ok_or(Error::NoParent(file.to_path_buf()))?
+            .to_path_buf();
         new_path.push(
             self.search
                 .replace(
                     file.file_name()
-                        .ok_or(Error::InvalidFileName)?
+                        .ok_or(Error::InvalidFileName(file.to_path_buf()))?
                         .to_str()
-                        .ok_or(Error::Utf8Invalid)?,
+                        .ok_or(Error::Utf8Invalid(PathBuf::from(file.file_name().unwrap())))?,
                     self.replace_pattern.as_str(),
                 )
                 .into_owned(),
