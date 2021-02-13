@@ -8,7 +8,7 @@ pub struct Cli {
     #[structopt(short = "n", long)]
     pub dry_run: bool,
     /// Actually running the rename operation.
-    /// If you want to set this as default, set the environment variable "FRS_DEFAULT_OP" to "RUN"
+    /// If you want to set this as default, set the environment variable `FRS_DEFAULT_OP` to `RUN`
     #[structopt(short, long)]
     pub run: bool,
 
@@ -77,7 +77,7 @@ impl Cli {
             }
             invalid_do => {
                 return Err(format!(
-                    "Unknown content '{}' of environment varaiable '{}'",
+                    "Unknown content `{}` of environment varaiable `{}`",
                     invalid_do, do_var_name
                 )
                 .to_string())
