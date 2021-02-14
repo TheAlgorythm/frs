@@ -1,11 +1,11 @@
 #![feature(async_closure)]
 
 mod cli;
-mod replace;
 mod fs;
+mod replace;
 
-use structopt::StructOpt;
 use colored::*;
+use structopt::StructOpt;
 
 #[async_std::main]
 async fn main() {

@@ -1,11 +1,11 @@
+use super::replace;
+use async_std::{fs, future, io, path::PathBuf};
 use colored::*;
 use futures::stream::{StreamExt, TryStreamExt};
-use async_std::{future, fs, io, path::PathBuf};
 use std::collections::HashSet;
-use std::sync::RwLock;
-use std::rc::Rc;
 use std::fmt;
-use super::replace;
+use std::rc::Rc;
+use std::sync::RwLock;
 
 pub enum Error {
     Io(io::Error),
@@ -30,7 +30,11 @@ impl fmt::Display for Error {
         match *self {
             Error::Io(ref err) => err.fmt(f),
             Error::Replace(ref err) => err.fmt(f),
-            Error::NonExistingParent(ref parent) => write!(f, "The parent directory `{}` does not exist", parent.to_string_lossy()),
+            Error::NonExistingParent(ref parent) => write!(
+                f,
+                "The parent directory `{}` does not exist",
+                parent.to_string_lossy()
+            ),
         }
     }
 }
@@ -48,18 +52,43 @@ pub async fn rename(opts: &super::cli::Cli, replacer: &replace::Replacer) -> Res
                 Ok(file_type) => file_type,
                 Err(error) => return Some(Err(Error::from(error))),
             };
-            if (file_type.is_file() && opts.file) ||
-                (file_type.is_dir() && opts.directory) ||
-                (file_type.is_symlink() && opts.symlink) {
+            if (file_type.is_file() && opts.file)
+                || (file_type.is_dir() && opts.directory)
+                || (file_type.is_symlink() && opts.symlink)
+            {
                 return Some(Ok(file_path.path()));
             }
             None
         })
-        .try_filter(|file_path| future::ready(!targets.read().expect(format!("{} Poisoned sync-lock on read!", "Fatal Error:".bright_red()).as_str()).contains(file_path) && replacer.is_match(file_path).unwrap_or(true)))
+        .try_filter(|file_path| {
+            future::ready(
+                !targets
+                    .read()
+                    .expect(
+                        format!(
+                            "{} Poisoned sync-lock on read!",
+                            "Fatal Error:".bright_red()
+                        )
+                        .as_str(),
+                    )
+                    .contains(file_path)
+                    && replacer.is_match(file_path).unwrap_or(true),
+            )
+        })
         .map_ok(async move |file_path| {
             let new_file_path = replacer.replace(&file_path)?;
-            if !new_file_path.parent().expect("Couldn't get parent!").is_dir().await {
-                return Err(Error::NonExistingParent(new_file_path.parent().expect("Couldn't get parent!").to_path_buf()));
+            if !new_file_path
+                .parent()
+                .expect("Couldn't get parent!")
+                .is_dir()
+                .await
+            {
+                return Err(Error::NonExistingParent(
+                    new_file_path
+                        .parent()
+                        .expect("Couldn't get parent!")
+                        .to_path_buf(),
+                ));
             }
             Ok((file_path.clone(), new_file_path))
         })
@@ -68,18 +97,34 @@ pub async fn rename(opts: &super::cli::Cli, replacer: &replace::Replacer) -> Res
             async move {
                 let (old_file_path, new_file_path) = match file_paths.await {
                     Ok(file_paths) => file_paths,
-                    Err(error) => if opts.continue_on_error {
-                        println!("{} {}", "Error:".bright_red(), error);
-                        return Ok(());
-                    } else {
-                        return Err(error);
+                    Err(error) => {
+                        if opts.continue_on_error {
+                            println!("{} {}", "Error:".bright_red(), error);
+                            return Ok(());
+                        } else {
+                            return Err(error);
+                        }
                     }
                 };
-                
-                targets.write().expect(format!("{} Poisoned sync-lock on write!", "Fatal Error:".bright_red()).as_str()).insert(new_file_path.clone());
+
+                targets
+                    .write()
+                    .expect(
+                        format!(
+                            "{} Poisoned sync-lock on write!",
+                            "Fatal Error:".bright_red()
+                        )
+                        .as_str(),
+                    )
+                    .insert(new_file_path.clone());
 
                 if opts.verbose >= 1 {
-                    println!("{} {} {}", old_file_path.to_string_lossy().red(), "->".blue(), new_file_path.to_string_lossy().green());
+                    println!(
+                        "{} {} {}",
+                        old_file_path.to_string_lossy().red(),
+                        "->".blue(),
+                        new_file_path.to_string_lossy().green()
+                    );
                 }
                 if opts.run {
                     fs::rename(old_file_path, new_file_path).await?;
