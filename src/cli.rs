@@ -61,7 +61,7 @@ impl Cli {
             return Err("run and dry-run flag specified".to_string());
         }
         match std::env::var(do_var_name)
-            .unwrap_or("DRY-RUN".to_string())
+            .unwrap_or_else(|_| "DRY-RUN".to_string())
             .to_uppercase()
             .as_str()
         {
@@ -79,8 +79,7 @@ impl Cli {
                 return Err(format!(
                     "Unknown content `{}` of environment varaiable `{}`",
                     invalid_do, do_var_name
-                )
-                .to_string())
+                ))
             }
         }
         Ok(())

@@ -45,24 +45,26 @@ impl Replacer {
     pub fn is_match(&self, file: &Path) -> Result<bool, Error> {
         Ok(self.search.is_match(
             file.file_name()
-                .ok_or(Error::InvalidFileName(file.to_path_buf()))?
+                .ok_or_else(|| Error::InvalidFileName(file.to_path_buf()))?
                 .to_str()
-                .ok_or(Error::Utf8Invalid(PathBuf::from(file.file_name().unwrap())))?,
+                .ok_or_else(|| Error::Utf8Invalid(PathBuf::from(file.file_name().unwrap())))?,
         ))
     }
 
     pub fn replace(&self, file: &Path) -> Result<PathBuf, Error> {
         let mut new_path = file
             .parent()
-            .ok_or(Error::NoParent(file.to_path_buf()))?
+            .ok_or_else(|| Error::NoParent(file.to_path_buf()))?
             .to_path_buf();
         new_path.push(
             self.search
                 .replace(
                     file.file_name()
-                        .ok_or(Error::InvalidFileName(file.to_path_buf()))?
+                        .ok_or_else(|| Error::InvalidFileName(file.to_path_buf()))?
                         .to_str()
-                        .ok_or(Error::Utf8Invalid(PathBuf::from(file.file_name().unwrap())))?,
+                        .ok_or_else(|| {
+                            Error::Utf8Invalid(PathBuf::from(file.file_name().unwrap()))
+                        })?,
                     self.replace_pattern.as_str(),
                 )
                 .into_owned(),

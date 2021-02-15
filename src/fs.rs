@@ -64,13 +64,13 @@ pub async fn rename(opts: &super::cli::Cli, replacer: &replace::Replacer) -> Res
             future::ready(
                 !targets
                     .read()
-                    .expect(
-                        format!(
-                            "{} Poisoned sync-lock on read!",
-                            "Fatal Error:".bright_red()
+                    .unwrap_or_else(|error| {
+                        panic!(
+                            "{} Poisoned sync-lock on read!\n{}",
+                            "Fatal Error:".bright_red(),
+                            error
                         )
-                        .as_str(),
-                    )
+                    })
                     .contains(file_path)
                     && replacer.is_match(file_path).unwrap_or(true),
             )
@@ -109,13 +109,13 @@ pub async fn rename(opts: &super::cli::Cli, replacer: &replace::Replacer) -> Res
 
                 targets
                     .write()
-                    .expect(
-                        format!(
-                            "{} Poisoned sync-lock on write!",
-                            "Fatal Error:".bright_red()
+                    .unwrap_or_else(|error| {
+                        panic!(
+                            "{} Poisoned sync-lock on write!\n{}",
+                            "Fatal Error:".bright_red(),
+                            error
                         )
-                        .as_str(),
-                    )
+                    })
                     .insert(new_file_path.clone());
 
                 if opts.verbose >= 1 {
