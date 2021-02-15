@@ -1,8 +1,8 @@
-# File Rename Search ![Rust](https://img.shields.io/badge/Rust-frs-success?style=for-the-badge&logo=rust)
+# File Rename Search
 
 ![MIT License](https://img.shields.io/github/license/TheAlgorythm/frs?style=for-the-badge&logo=open-source-initiative)
 [![Workflow Status](https://img.shields.io/github/workflow/status/TheAlgorythm/frs/Rust?style=for-the-badge)](https://github.com/TheAlgorythm/frs/actions?query=workflow%3ARust)
-[![Crates.io](https://img.shields.io/crates/v/frs?style=for-the-badge)](https://crates.io/crates/frs)
+[![Crates.io](https://img.shields.io/crates/v/frs?style=for-the-badge&logo=rust)](https://crates.io/crates/frs)
 
 Rename files with RegEx patterns.
 
@@ -10,7 +10,7 @@ Rename files with RegEx patterns.
 
 ```zsh
 $ frs --help
-frs 0.1.0
+frs 0.1.1
 
 USAGE:
   frs [FLAGS] <search-pattern> <replace-pattern> [base-path]
