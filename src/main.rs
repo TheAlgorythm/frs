@@ -1,5 +1,9 @@
 #![feature(async_closure)]
 
+#[cfg(test)]
+#[macro_use]
+extern crate matches;
+
 mod cli;
 mod fs;
 mod replace;

@@ -1,5 +1,33 @@
 use async_std::path::PathBuf;
+use std::fmt;
 use structopt::{clap::AppSettings, StructOpt};
+
+#[derive(Debug)]
+pub enum Error {
+    MultipleOperationModes,
+    UnknownEnvVarContent(String, String),
+}
+
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match *self {
+            Self::MultipleOperationModes => {
+                write!(f, "Multiple operation modes specified")
+            }
+            Self::UnknownEnvVarContent(ref var_name, ref content) => {
+                write!(
+                    f,
+                    "Unknown content `{}` of environment varaiable `{}`",
+                    var_name, content
+                )
+            }
+        }
+    }
+}
+
+#[cfg(test)]
+#[path = "./cli_test.rs"]
+mod cli_test;
 
 #[derive(Debug, StructOpt)]
 #[structopt(setting(AppSettings::ColoredHelp))]
@@ -47,7 +75,7 @@ pub struct Cli {
 
 impl Cli {
     /// does all the automations after clap
-    pub fn post_automations(&mut self) -> Result<(), String> {
+    pub fn post_automations(&mut self) -> Result<(), Error> {
         self.set_operation_mode()?;
         self.set_verbosity();
         self.set_types();
@@ -55,10 +83,10 @@ impl Cli {
     }
 
     /// checks and changes the running option according the environment varaiable
-    fn set_operation_mode(&mut self) -> Result<(), String> {
+    fn set_operation_mode(&mut self) -> Result<(), Error> {
         let do_var_name = "FRS_DEFAULT_OP";
         if self.run && self.dry_run {
-            return Err("run and dry-run flag specified".to_string());
+            return Err(Error::MultipleOperationModes);
         }
         match std::env::var(do_var_name)
             .unwrap_or_else(|_| "DRY-RUN".to_string())
@@ -76,9 +104,9 @@ impl Cli {
                 }
             }
             invalid_do => {
-                return Err(format!(
-                    "Unknown content `{}` of environment varaiable `{}`",
-                    invalid_do, do_var_name
+                return Err(Error::UnknownEnvVarContent(
+                    do_var_name.to_string(),
+                    invalid_do.to_string(),
                 ))
             }
         }
