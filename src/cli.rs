@@ -2,6 +2,10 @@ use async_std::path::PathBuf;
 use std::fmt;
 use structopt::{clap::AppSettings, StructOpt};
 
+#[cfg(test)]
+#[path = "./cli_test.rs"]
+mod cli_test;
+
 #[derive(Debug)]
 pub enum Error {
     MultipleOperationModes,
@@ -24,10 +28,6 @@ impl fmt::Display for Error {
         }
     }
 }
-
-#[cfg(test)]
-#[path = "./cli_test.rs"]
-mod cli_test;
 
 #[derive(Debug, StructOpt)]
 #[structopt(setting(AppSettings::ColoredHelp))]
