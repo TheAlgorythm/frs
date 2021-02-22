@@ -6,7 +6,7 @@ use futures::stream::{StreamExt, TryStreamExt};
 use std::collections::HashSet;
 use std::fmt;
 use std::rc::Rc;
-use std::sync::RwLock;
+use async_std::sync::RwLock;
 
 pub enum Error {
     Io(io::Error),
@@ -51,7 +51,7 @@ pub async fn rename(opts: &cli::Cli, replacer: &replace::Replacer) -> Result<(),
             async move { check_unique_pattern_match(&file_path, &replacer, done_targets).await }
         })
         .map_ok(async move |file_path| rename_file_path(file_path, &replacer).await)
-        .try_for_each(|file_paths| {
+        .try_for_each_concurrent(None, |file_paths| {
             let done_targets = done_targets.clone();
             async move { process_file_rename(file_paths.await, opts, done_targets).await }
         })
@@ -86,13 +86,7 @@ async fn check_unique_pattern_match(
 ) -> bool {
     !done_targets
         .read()
-        .unwrap_or_else(|error| {
-            panic!(
-                "{} Poisoned sync-lock on read!\n{}",
-                "Fatal Error:".bright_red(),
-                error
-            )
-        })
+        .await
         .contains(file_path)
         && replacer.is_match(file_path).unwrap_or(true)
 }
@@ -137,13 +131,7 @@ async fn process_file_rename(
 
     done_targets
         .write()
-        .unwrap_or_else(|error| {
-            panic!(
-                "{} Poisoned sync-lock on write!\n{}",
-                "Fatal Error:".bright_red(),
-                error
-            )
-        })
+        .await
         .insert(new_file_path.clone());
 
     if opts.verbose >= 1 {
