@@ -1,12 +1,12 @@
 use super::cli;
 use super::replace;
+use async_std::sync::RwLock;
 use async_std::{fs, io, path::PathBuf};
 use colored::*;
 use futures::stream::{StreamExt, TryStreamExt};
 use std::collections::HashSet;
 use std::fmt;
 use std::rc::Rc;
-use async_std::sync::RwLock;
 
 pub enum Error {
     Io(io::Error),
@@ -84,11 +84,7 @@ async fn check_unique_pattern_match(
     replacer: &replace::Replacer,
     done_targets: Rc<RwLock<HashSet<PathBuf>>>,
 ) -> bool {
-    !done_targets
-        .read()
-        .await
-        .contains(file_path)
-        && replacer.is_match(file_path).unwrap_or(true)
+    !done_targets.read().await.contains(file_path) && replacer.is_match(file_path).unwrap_or(true)
 }
 
 async fn rename_file_path(
@@ -129,10 +125,7 @@ async fn process_file_rename(
         }
     };
 
-    done_targets
-        .write()
-        .await
-        .insert(new_file_path.clone());
+    done_targets.write().await.insert(new_file_path.clone());
 
     if opts.verbose >= 1 {
         println!(
