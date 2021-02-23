@@ -12,6 +12,7 @@ use std::rc::Rc;
 #[path = "./fs_test.rs"]
 mod fs_test;
 
+#[derive(Debug)]
 pub enum Error {
     Io(io::Error),
     Replace(replace::Error),
