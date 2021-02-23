@@ -4,7 +4,7 @@ use structopt::{clap::AppSettings, StructOpt};
 
 #[cfg(test)]
 #[path = "./cli_test.rs"]
-mod cli_test;
+pub mod cli_test;
 
 #[derive(Debug)]
 pub enum Error {

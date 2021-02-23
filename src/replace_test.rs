@@ -1,12 +1,23 @@
 use super::*;
 use std::ffi::OsStr;
 
-#[test]
-fn match_invalid_filenames() {
-    let replacer = Replacer {
+pub fn empty_replacer() -> Replacer {
+    Replacer {
         search: Regex::new("(.+)").unwrap(),
         replace_pattern: "${1}".to_string(),
-    };
+    }
+}
+
+pub fn restrictive_replacer() -> Replacer {
+    Replacer {
+        search: Regex::new("_(.+)").unwrap(),
+        replace_pattern: "${1}".to_string(),
+    }
+}
+
+#[test]
+fn match_invalid_filenames() {
+    let replacer = empty_replacer();
 
     assert_matches!(
         replacer.is_match(Path::new("..")),
@@ -26,10 +37,7 @@ fn match_invalid_filenames() {
 #[test]
 fn match_non_utf8_filenames() {
     use std::os::unix::ffi::OsStrExt;
-    let replacer = Replacer {
-        search: Regex::new("(.+)").unwrap(),
-        replace_pattern: "${1}".to_string(),
-    };
+    let replacer = empty_replacer();
 
     assert_matches!(
         replacer.is_match(Path::new(OsStr::from_bytes(&[0x66, 0x6f, 0x80, 0x6f]))),
@@ -41,10 +49,7 @@ fn match_non_utf8_filenames() {
 #[test]
 fn match_non_utf8_filenames() {
     use std::os::windows::prelude::*;
-    let replacer = Replacer {
-        search: Regex::new("(.+)").unwrap(),
-        replace_pattern: "${1}".to_string(),
-    };
+    let replacer = empty_replacer();
 
     assert_matches!(
         replacer.is_match(Path::new(OsStr::from_bytes(&[
@@ -56,10 +61,7 @@ fn match_non_utf8_filenames() {
 
 #[test]
 fn replace_invalid_filenames() {
-    let replacer = Replacer {
-        search: Regex::new("(.+)").unwrap(),
-        replace_pattern: "${1}".to_string(),
-    };
+    let replacer = empty_replacer();
 
     assert_matches!(
         replacer.replace(Path::new("..")),
@@ -73,10 +75,7 @@ fn replace_invalid_filenames() {
 
 #[test]
 fn replace_no_parent() {
-    let replacer = Replacer {
-        search: Regex::new("(.+)").unwrap(),
-        replace_pattern: "${1}".to_string(),
-    };
+    let replacer = empty_replacer();
 
     assert_matches!(replacer.replace(Path::new("/")), Err(Error::NoParent(_)));
 }
@@ -85,10 +84,7 @@ fn replace_no_parent() {
 #[test]
 fn replace_non_utf8_filenames() {
     use std::os::unix::ffi::OsStrExt;
-    let replacer = Replacer {
-        search: Regex::new("(.+)").unwrap(),
-        replace_pattern: "${1}".to_string(),
-    };
+    let replacer = empty_replacer();
 
     assert_matches!(
         replacer.replace(Path::new(OsStr::from_bytes(&[0x66, 0x6f, 0x80, 0x6f]))),
@@ -100,10 +96,7 @@ fn replace_non_utf8_filenames() {
 #[test]
 fn replace_non_utf8_filenames() {
     use std::os::windows::prelude::*;
-    let replacer = Replacer {
-        search: Regex::new("(.+)").unwrap(),
-        replace_pattern: "${1}".to_string(),
-    };
+    let replacer = empty_replacer();
 
     assert_matches!(
         replacer.replace(Path::new(OsStr::from_bytes(&[

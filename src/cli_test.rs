@@ -1,6 +1,6 @@
 use super::*;
 
-fn empty_cli() -> Cli {
+pub fn empty_cli() -> Cli {
     Cli {
         run: false,
         dry_run: false,

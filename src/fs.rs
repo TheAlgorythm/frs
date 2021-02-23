@@ -8,6 +8,10 @@ use std::collections::HashSet;
 use std::fmt;
 use std::rc::Rc;
 
+#[cfg(test)]
+#[path = "./fs_test.rs"]
+mod fs_test;
+
 pub enum Error {
     Io(io::Error),
     Replace(replace::Error),
