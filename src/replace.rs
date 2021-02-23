@@ -31,6 +31,7 @@ impl fmt::Display for Error {
     }
 }
 
+#[derive(Debug)]
 pub struct Replacer {
     search: Regex,
     replace_pattern: String,

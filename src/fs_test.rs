@@ -1,5 +1,16 @@
+use super::cli::cli_test::empty_cli;
 use super::*;
 use crate::replace::replace_test::{empty_replacer, restrictive_replacer};
+
+#[async_std::test]
+async fn check_io_error() {
+    let cli = empty_cli();
+
+    assert_matches!(
+        check_file_type(Err(io::Error::new(io::ErrorKind::Other, "test")), &cli).await,
+        Some(Err(Error::Io(_)))
+    );
+}
 
 #[async_std::test]
 async fn already_done_matching_target() {
@@ -82,12 +93,56 @@ async fn rename_without_parent() {
 }
 
 #[async_std::test]
-#[allow(unused_variables)]
 async fn simple_rename() {
     let old_path = PathBuf::from("./_old");
     let new_path = PathBuf::from("./old");
-    assert_matches!(
-        rename_file_path(old_path, &restrictive_replacer()).await,
-        Ok((old_path, new_path))
+
+    assert_eq!(
+        rename_file_path(old_path.clone(), &restrictive_replacer())
+            .await
+            .unwrap(),
+        (old_path, new_path)
     );
+}
+
+#[async_std::test]
+async fn stop_on_error() {
+    let done_targets = Rc::new(RwLock::new(hashset![]));
+    let cli = empty_cli();
+    let files_result = Err(Error::NonExistingParent(PathBuf::from("./old")));
+
+    assert_matches!(
+        process_file_rename(files_result, &cli, done_targets).await,
+        Err(Error::NonExistingParent(_))
+    );
+}
+
+#[async_std::test]
+async fn continue_on_error() {
+    let done_targets = Rc::new(RwLock::new(hashset![]));
+    let mut cli = empty_cli();
+    cli.continue_on_error = true;
+    let files_result = Err(Error::NonExistingParent(PathBuf::from("./old")));
+
+    assert_matches!(
+        process_file_rename(files_result, &cli, done_targets).await,
+        Ok(())
+    );
+}
+
+#[async_std::test]
+async fn add_to_done() {
+    let done_targets = Rc::new(RwLock::new(hashset![]));
+    let cli = empty_cli();
+    let new_path = PathBuf::from("./new");
+    let files_result = Ok((PathBuf::from("./old"), new_path.clone()));
+
+    {
+        let done_targets = done_targets.clone();
+        assert_matches!(
+            process_file_rename(files_result, &cli, done_targets).await,
+            Ok(())
+        );
+    }
+    assert!(done_targets.read().await.contains(&new_path));
 }
