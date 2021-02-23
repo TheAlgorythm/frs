@@ -49,7 +49,7 @@ test_folder/foo_01.txt -> test_folder/01_foo.txt
 Please check, that you have a recent version of Rust installed.
 
 ```zsh
-$ cargo install frs
+$ cargo +nightly install frs
 ```
 
 ## Setup
