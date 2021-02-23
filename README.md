@@ -10,7 +10,6 @@ Rename files with RegEx patterns.
 
 ```zsh
 $ frs --help
-frs 0.1.1
 
 USAGE:
   frs [FLAGS] <search-pattern> <replace-pattern> [base-path]
@@ -35,6 +34,14 @@ ARGS:
   <base-path>           [default: .]
 ```
 
+### Example
+
+```zsh
+$ frs -f '([a-z]+)_(\d+)(\..+)' '${2}_${1}${3}' test_folder
+test_folder/bar_02.png -> test_folder/02_bar.png
+test_folder/foo_01.txt -> test_folder/01_foo.txt
+```
+
 ## Installation
 
 ### Cargo
@@ -42,7 +49,7 @@ ARGS:
 Please check, that you have a recent version of Rust installed.
 
 ```zsh
-$ cargo +nightly install frs
+$ cargo install frs
 ```
 
 ## Setup
