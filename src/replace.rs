@@ -2,6 +2,10 @@ use async_std::path::{Path, PathBuf};
 use regex::{Regex, RegexBuilder};
 use std::fmt;
 
+#[cfg(test)]
+#[path = "./replace_test.rs"]
+pub mod replace_test;
+
 #[derive(Debug)]
 pub enum Error {
     InvalidFileName(PathBuf),
@@ -27,6 +31,7 @@ impl fmt::Display for Error {
     }
 }
 
+#[derive(Debug)]
 pub struct Replacer {
     search: Regex,
     replace_pattern: String,

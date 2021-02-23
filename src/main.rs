@@ -1,5 +1,13 @@
 #![feature(async_closure)]
 
+#[cfg(test)]
+#[macro_use]
+extern crate matches;
+
+#[cfg(test)]
+#[macro_use]
+extern crate maplit;
+
 mod cli;
 mod fs;
 mod replace;
