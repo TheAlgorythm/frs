@@ -21,22 +21,22 @@ pub enum Error {
 
 impl From<io::Error> for Error {
     fn from(err: io::Error) -> Self {
-        Error::Io(err)
+        Self::Io(err)
     }
 }
 
 impl From<replace::Error> for Error {
     fn from(err: replace::Error) -> Self {
-        Error::Replace(err)
+        Self::Replace(err)
     }
 }
 
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            Error::Io(ref err) => err.fmt(f),
-            Error::Replace(ref err) => err.fmt(f),
-            Error::NonExistingParent(ref parent) => write!(
+            Self::Io(ref err) => err.fmt(f),
+            Self::Replace(ref err) => err.fmt(f),
+            Self::NonExistingParent(ref parent) => write!(
                 f,
                 "The parent directory `{}` does not exist",
                 parent.to_string_lossy()

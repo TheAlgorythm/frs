@@ -1,4 +1,5 @@
 #![feature(async_closure)]
+#![warn(clippy::use_self)]
 
 #[cfg(test)]
 #[macro_use]

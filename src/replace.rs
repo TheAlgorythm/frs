@@ -16,13 +16,13 @@ pub enum Error {
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            Error::InvalidFileName(ref path) => {
+            Self::InvalidFileName(ref path) => {
                 write!(f, "The filename `{}`  is invalid", path.to_string_lossy())
             }
-            Error::NoParent(ref path) => {
+            Self::NoParent(ref path) => {
                 write!(f, "There is no parent of `{}`", path.to_string_lossy())
             }
-            Error::Utf8Invalid(ref path) => write!(
+            Self::Utf8Invalid(ref path) => write!(
                 f,
                 "There is a conversion error in `{}` to UTF-8",
                 path.to_string_lossy()
@@ -39,7 +39,7 @@ pub struct Replacer {
 
 impl Replacer {
     pub fn new(opts: &super::cli::Cli) -> Result<Self, regex::Error> {
-        Ok(Replacer {
+        Ok(Self {
             search: RegexBuilder::new(&opts.search_pattern.clone())
                 .case_insensitive(opts.case_insensetive)
                 .build()?,
