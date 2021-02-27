@@ -1,8 +1,7 @@
 use super::cli;
 use super::replace;
 use async_std::sync::{Arc, RwLock};
-use async_std::{fs, io, path::PathBuf};
-use blocking::unblock;
+use async_std::{fs, io, path::PathBuf, task};
 use colored::*;
 use futures::stream::{StreamExt, TryStreamExt};
 use std::collections::HashSet;
@@ -96,7 +95,7 @@ async fn check_unique_pattern_match(
 ) -> bool {
     let file_path = file_path.clone();
     !done_targets.read().await.contains(&file_path)
-        && unblock(move || replacer.is_match(&file_path).unwrap_or(true)).await
+        && task::spawn(async move { replacer.is_match(&file_path).unwrap_or(true) }).await
 }
 
 async fn rename_file_path(
@@ -105,7 +104,7 @@ async fn rename_file_path(
 ) -> Result<(PathBuf, PathBuf), Error> {
     let new_file_path = {
         let file_path = file_path.clone();
-        unblock(move || replacer.replace(&file_path)).await?
+        task::spawn(async move { replacer.replace(&file_path) }).await?
     };
     if !new_file_path
         .parent()

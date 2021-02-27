@@ -20,7 +20,7 @@ async fn already_done_matching_target() {
         PathBuf::from("done-2")
     ]));
 
-    assert!(!check_unique_pattern_match(&done_path, &empty_replacer(), done_targets).await);
+    assert!(!check_unique_pattern_match(&done_path, Arc::new(empty_replacer()), done_targets).await);
 }
 
 #[async_std::test]
@@ -31,7 +31,7 @@ async fn not_done_matching_target() {
     ]));
 
     assert!(
-        check_unique_pattern_match(&PathBuf::from("/new"), &empty_replacer(), done_targets).await
+        check_unique_pattern_match(&PathBuf::from("/new"), Arc::new(empty_replacer()), done_targets).await
     );
 }
 
@@ -43,7 +43,7 @@ async fn already_done_not_matching_target() {
         PathBuf::from("done-2")
     ]));
 
-    assert!(!check_unique_pattern_match(&done_path, &restrictive_replacer(), done_targets).await);
+    assert!(!check_unique_pattern_match(&done_path, Arc::new(restrictive_replacer()), done_targets).await);
 }
 
 #[async_std::test]
@@ -56,7 +56,7 @@ async fn not_done_not_matching_target() {
     assert!(
         !check_unique_pattern_match(
             &PathBuf::from("/new"),
-            &restrictive_replacer(),
+            Arc::new(restrictive_replacer()),
             done_targets
         )
         .await
@@ -71,7 +71,7 @@ async fn pass_matching_error() {
     ]));
 
     assert!(
-        check_unique_pattern_match(&PathBuf::from(".."), &restrictive_replacer(), done_targets)
+        check_unique_pattern_match(&PathBuf::from(".."), Arc::new(restrictive_replacer()), done_targets)
             .await
     );
 }
@@ -79,7 +79,7 @@ async fn pass_matching_error() {
 #[async_std::test]
 async fn rename_invalid_filename() {
     assert_matches!(
-        rename_file_path(PathBuf::from("."), &restrictive_replacer()).await,
+        rename_file_path(PathBuf::from("."), Arc::new(restrictive_replacer())).await,
         Err(Error::Replace(replace::Error::InvalidFileName(_)))
     );
 }
@@ -87,7 +87,7 @@ async fn rename_invalid_filename() {
 #[async_std::test]
 async fn rename_without_parent() {
     assert_matches!(
-        rename_file_path(PathBuf::from("non_existant/_old"), &restrictive_replacer()).await,
+        rename_file_path(PathBuf::from("non_existant/_old"), Arc::new(restrictive_replacer())).await,
         Err(Error::NonExistingParent(_))
     );
 }
@@ -98,7 +98,7 @@ async fn simple_rename() {
     let new_path = PathBuf::from("./old");
 
     assert_eq!(
-        rename_file_path(old_path.clone(), &restrictive_replacer())
+        rename_file_path(old_path.clone(), Arc::new(restrictive_replacer()))
             .await
             .unwrap(),
         (old_path, new_path)
