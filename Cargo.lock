@@ -293,6 +293,7 @@ name = "frs"
 version = "0.2.1"
 dependencies = [
  "async-std",
+ "blocking",
  "colored",
  "futures",
  "maplit",

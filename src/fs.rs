@@ -1,7 +1,8 @@
 use super::cli;
 use super::replace;
-use async_std::sync::RwLock;
+use async_std::sync::{Arc, RwLock};
 use async_std::{fs, io, path::PathBuf};
+use blocking::unblock;
 use colored::*;
 use futures::stream::{StreamExt, TryStreamExt};
 use std::collections::HashSet;
@@ -45,19 +46,23 @@ impl fmt::Display for Error {
     }
 }
 
-pub async fn rename(opts: &cli::Cli, replacer: &replace::Replacer) -> Result<(), Error> {
+pub async fn rename(opts: &cli::Cli, replacer: Arc<replace::Replacer>) -> Result<(), Error> {
     let done_targets = Rc::new(RwLock::new(HashSet::new()));
     fs::read_dir(opts.base_path.clone())
         .await?
         .filter_map(async move |file_entry| check_file_type(file_entry, opts).await)
         .try_filter(|file_path| {
-            let done_targets = done_targets.clone();
             let file_path = file_path.clone();
-            async move { check_unique_pattern_match(&file_path, &replacer, done_targets).await }
+            let done_targets = Rc::clone(&done_targets);
+            let replacer = Arc::clone(&replacer);
+            async move { check_unique_pattern_match(&file_path, replacer, done_targets).await }
         })
-        .map_ok(async move |file_path| rename_file_path(file_path, &replacer).await)
+        .map_ok(|file_path| {
+            let replacer = Arc::clone(&replacer);
+            async move { rename_file_path(file_path, replacer).await }
+        })
         .try_for_each_concurrent(None, |file_paths| {
-            let done_targets = done_targets.clone();
+            let done_targets = Rc::clone(&done_targets);
             async move { process_file_rename(file_paths.await, opts, done_targets).await }
         })
         .await
@@ -86,17 +91,22 @@ async fn check_file_type(
 
 async fn check_unique_pattern_match(
     file_path: &PathBuf,
-    replacer: &replace::Replacer,
+    replacer: Arc<replace::Replacer>,
     done_targets: Rc<RwLock<HashSet<PathBuf>>>,
 ) -> bool {
-    !done_targets.read().await.contains(file_path) && replacer.is_match(file_path).unwrap_or(true)
+    let file_path = file_path.clone();
+    !done_targets.read().await.contains(&file_path)
+        && unblock(move || replacer.is_match(&file_path).unwrap_or(true)).await
 }
 
 async fn rename_file_path(
     file_path: PathBuf,
-    replacer: &replace::Replacer,
+    replacer: Arc<replace::Replacer>,
 ) -> Result<(PathBuf, PathBuf), Error> {
-    let new_file_path = replacer.replace(&file_path)?;
+    let new_file_path = {
+        let file_path = file_path.clone();
+        unblock(move || replacer.replace(&file_path)).await?
+    };
     if !new_file_path
         .parent()
         .expect("Couldn't get parent!")

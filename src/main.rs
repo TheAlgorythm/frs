@@ -13,6 +13,7 @@ mod cli;
 mod fs;
 mod replace;
 
+use async_std::sync::Arc;
 use colored::*;
 use structopt::StructOpt;
 
@@ -24,14 +25,14 @@ async fn main() {
         return;
     }
     let replacer = match replace::Replacer::new(&cli_opts) {
-        Ok(replacer) => replacer,
+        Ok(replacer) => Arc::new(replacer),
         Err(error) => {
             println!("{} {}!", "Error:".bright_red(), error);
             return;
         }
     };
 
-    if let Err(error) = fs::rename(&cli_opts, &replacer).await {
+    if let Err(error) = fs::rename(&cli_opts, replacer).await {
         println!("{} {}!", "Error:".bright_red(), error);
         return;
     }
