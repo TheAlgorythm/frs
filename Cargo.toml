@@ -12,13 +12,14 @@ keywords = ["rename", "find", "regex", "rename-files", "rename-directories"]
 categories = ["command-line-utilities", "filesystem", "development-tools"]
 
 [dependencies]
-futures = "0.3"
-async-std = { version = "1.9", features = ["attributes"] }
-regex = "1.4"
-structopt = "0.3"
-colored = "2.0"
+futures = "~0.3"
+async-std = { version = "~1.9", features = ["attributes"] }
+regex = "~1.4"
+structopt = "~0.3"
+colored = "~2.0"
+thiserror = "~1.0"
 
 [dev-dependencies]
-matches = "0.1"
-maplit = "1.0"
+matches = "~0.1"
+maplit = "~1.0"
 

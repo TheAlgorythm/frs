@@ -5,44 +5,20 @@ use async_std::{fs, io, path::PathBuf};
 use colored::Colorize;
 use futures::stream::{StreamExt, TryStreamExt};
 use std::collections::HashSet;
-use std::fmt;
 use std::rc::Rc;
 
 #[cfg(test)]
 #[path = "./fs_test.rs"]
 mod fs_test;
 
-#[derive(Debug)]
+#[derive(thiserror::Error, Debug)]
 pub enum Error {
-    Io(io::Error),
-    Replace(replace::Error),
+    #[error(transparent)]
+    Io(#[from] io::Error),
+    #[error(transparent)]
+    Replace(#[from] replace::Error),
+    #[error("The parent directory `{}` does not exist", .0.to_string_lossy())]
     NonExistingParent(PathBuf),
-}
-
-impl From<io::Error> for Error {
-    fn from(err: io::Error) -> Self {
-        Self::Io(err)
-    }
-}
-
-impl From<replace::Error> for Error {
-    fn from(err: replace::Error) -> Self {
-        Self::Replace(err)
-    }
-}
-
-impl fmt::Display for Error {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match *self {
-            Self::Io(ref err) => err.fmt(f),
-            Self::Replace(ref err) => err.fmt(f),
-            Self::NonExistingParent(ref parent) => write!(
-                f,
-                "The parent directory `{}` does not exist",
-                parent.to_string_lossy()
-            ),
-        }
-    }
 }
 
 pub async fn rename(opts: &cli::Cli, replacer: &replace::Replacer) -> Result<(), Error> {

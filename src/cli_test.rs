@@ -33,7 +33,7 @@ fn invalid_env_var() {
     std::env::set_var("FRS_DEFAULT_OP", "invalid");
     assert_matches!(
         cli.set_operation_mode(),
-        Err(Error::UnknownEnvVarContent(_, _))
+        Err(Error::UnknownEnvVarContent { .. })
     );
 }
 

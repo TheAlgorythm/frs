@@ -1,32 +1,16 @@
 use async_std::path::PathBuf;
-use std::fmt;
 use structopt::{clap::AppSettings, StructOpt};
 
 #[cfg(test)]
 #[path = "./cli_test.rs"]
 pub mod cli_test;
 
-#[derive(Debug)]
+#[derive(thiserror::Error, Debug)]
 pub enum Error {
+    #[error("Multiple operation modes specified")]
     MultipleOperationModes,
-    UnknownEnvVarContent(String, String),
-}
-
-impl fmt::Display for Error {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match *self {
-            Self::MultipleOperationModes => {
-                write!(f, "Multiple operation modes specified")
-            }
-            Self::UnknownEnvVarContent(ref var_name, ref content) => {
-                write!(
-                    f,
-                    "Unknown content `{}` of environment varaiable `{}`",
-                    var_name, content
-                )
-            }
-        }
-    }
+    #[error("Unknown content `{content}` of environment variable `{var_name}`")]
+    UnknownEnvVarContent { var_name: String, content: String },
 }
 
 #[derive(Debug, StructOpt)]
@@ -104,10 +88,10 @@ impl Cli {
                 }
             }
             invalid_do => {
-                return Err(Error::UnknownEnvVarContent(
-                    do_var_name.to_string(),
-                    invalid_do.to_string(),
-                ))
+                return Err(Error::UnknownEnvVarContent {
+                    var_name: do_var_name.to_string(),
+                    content: invalid_do.to_string(),
+                })
             }
         }
         Ok(())

@@ -1,34 +1,18 @@
 use async_std::path::{Path, PathBuf};
 use regex::{Regex, RegexBuilder};
-use std::fmt;
 
 #[cfg(test)]
 #[path = "./replace_test.rs"]
 pub mod replace_test;
 
-#[derive(Debug)]
+#[derive(thiserror::Error, Debug)]
 pub enum Error {
+    #[error("The filename `{}` is invalid", .0.to_string_lossy())]
     InvalidFileName(PathBuf),
+    #[error("There is no parent of `{}`", .0.to_string_lossy())]
     NoParent(PathBuf),
+    #[error("There is a conversion error in `{}` to UTF-8", .0.to_string_lossy())]
     Utf8Invalid(PathBuf),
-}
-
-impl fmt::Display for Error {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match *self {
-            Self::InvalidFileName(ref path) => {
-                write!(f, "The filename `{}`  is invalid", path.to_string_lossy())
-            }
-            Self::NoParent(ref path) => {
-                write!(f, "There is no parent of `{}`", path.to_string_lossy())
-            }
-            Self::Utf8Invalid(ref path) => write!(
-                f,
-                "There is a conversion error in `{}` to UTF-8",
-                path.to_string_lossy()
-            ),
-        }
-    }
 }
 
 #[derive(Debug)]
