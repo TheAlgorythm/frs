@@ -3,9 +3,10 @@ use super::replace;
 use async_std::sync::RwLock;
 use async_std::{fs, io, path::PathBuf};
 use colored::Colorize;
-use futures::stream::{StreamExt, TryStreamExt};
+use futures::stream::{Stream, StreamExt, TryStreamExt};
 use std::collections::HashSet;
 use std::rc::Rc;
+use super::select_map::SelectMapExt;
 
 #[cfg(test)]
 #[path = "./fs_test.rs"]
@@ -23,7 +24,7 @@ pub enum Error {
 
 pub async fn rename(opts: &cli::Cli, replacer: &replace::Replacer) -> Result<(), Error> {
     let done_targets = Rc::new(RwLock::new(HashSet::new()));
-    fs::read_dir(opts.base_path.clone())
+    read_dir_recursive(&opts.base_path)
         .await?
         .filter_map(async move |file_entry| check_file_type(file_entry, opts).await)
         .try_filter(|file_path| {
@@ -38,6 +39,21 @@ pub async fn rename(opts: &cli::Cli, replacer: &replace::Replacer) -> Result<(),
         })
         .await
 }
+
+async fn read_dir_recursive(
+    base_path: &PathBuf,
+) -> Result<Box<dyn Stream<Item = io::Result<fs::DirEntry>> + Unpin>, io::Error> {
+    Ok(Box::new(fs::read_dir(base_path).await?.select_map(
+        |sub_path: &io::Result<fs::DirEntry>| {
+            let sub_path = match sub_path {
+                Ok(sub_path) => Some(sub_path.clone()),
+                Err(_) => None,
+            };
+            Box::pin(async move { read_dir_recursive(&sub_path?.path()).await.ok() })
+        },
+    )))
+}
+
 
 async fn check_file_type(
     file_path: io::Result<fs::DirEntry>,
