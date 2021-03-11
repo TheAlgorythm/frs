@@ -1,21 +1,9 @@
 use core::ops::Fn;
 use core::pin::Pin;
-use futures::stream::{Fuse, Stream, StreamExt};
+use futures::stream::{Fuse, FusedStream, Stream, StreamExt};
 use futures::{Future, FutureExt};
 use futures_core::task::{Context, Poll};
 use pin_project_lite::pin_project;
-
-pin_project! {
-#[derive(Debug)]
-#[must_use = "streams do nothing unless polled"]
-pub struct SelectMap<S1, S2, F, Fut> {
-    #[pin]
-    primary_stream: Fuse<S1>,
-    pending_secondary_streams: Vec<Fut>,
-    secondary_streams: Vec<Fuse<S2>>,
-    f: F,
-}
-}
 
 pub trait SelectMapExt: Stream {
     fn select_map<S2, F, Fut>(self, f: F) -> SelectMap<Self, S2, F, Fut>
@@ -35,6 +23,18 @@ pub trait SelectMapExt: Stream {
 }
 
 impl<T: ?Sized> SelectMapExt for T where T: Stream {}
+
+pin_project! {
+#[derive(Debug)]
+#[must_use = "streams do nothing unless polled"]
+pub struct SelectMap<S1, S2, F, Fut> {
+    #[pin]
+    primary_stream: Fuse<S1>,
+    pending_secondary_streams: Vec<Fut>,
+    secondary_streams: Vec<Fuse<S2>>,
+    f: F,
+}
+}
 
 impl<S1, S2, F, Fut> Stream for SelectMap<S1, S2, F, Fut>
 where
@@ -83,5 +83,34 @@ where
             return Poll::Ready(None);
         }
         Poll::Pending
+    }
+
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        (
+            self.primary_stream.size_hint().0.saturating_sub(
+                self.secondary_streams
+                    .iter()
+                    .map(|secondary_stream| secondary_stream.size_hint().0)
+                    .sum(),
+            ),
+            None,
+        )
+    }
+}
+
+impl<S1, S2, F, Fut> FusedStream for SelectMap<S1, S2, F, Fut>
+where
+    S1: Stream,
+    S2: Stream<Item = S1::Item> + Unpin,
+    F: Fn(&S1::Item) -> Fut,
+    Fut: Future<Output = Option<S2>> + Unpin,
+{
+    fn is_terminated(&self) -> bool {
+        self.primary_stream.is_terminated()
+            && self.pending_secondary_streams.is_empty()
+            && self
+                .secondary_streams
+                .iter()
+                .all(|secondary_stream| secondary_stream.is_terminated())
     }
 }
