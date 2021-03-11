@@ -14,7 +14,7 @@ extern crate maplit;
 mod cli;
 mod fs;
 mod replace;
-mod select_map;
+mod utils;
 
 use colored::Colorize;
 use structopt::StructOpt;
