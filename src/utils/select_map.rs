@@ -55,6 +55,7 @@ where
             Poll::Ready(None) => true,
             Poll::Pending => false,
         };
+
         let mut non_pending_secondary_streams = Vec::new();
         for (pending_index, pending_secondary_stream) in
             this.pending_secondary_streams.iter_mut().enumerate()
@@ -72,13 +73,22 @@ where
             this.pending_secondary_streams.remove(*non_pending_index);
         }
 
-        for secondary_stream in this.secondary_streams.iter_mut() {
+        let mut empty_secondary_streams = Vec::new();
+        for (stream_index, secondary_stream) in this.secondary_streams.iter_mut().enumerate() {
+            // for secondary_stream in this.secondary_streams.iter_mut() {
             match secondary_stream.poll_next_unpin(cx) {
                 Poll::Ready(Some(item)) => return Poll::Ready(Some(item)),
-                Poll::Ready(None) => {}
+                // Poll::Ready(None) => {}
+                Poll::Ready(None) => empty_secondary_streams.push(stream_index),
                 Poll::Pending => all_done = false,
             }
         }
+        for empty_stream_index in empty_secondary_streams.iter().rev() {
+            // The fused stream can be dropped, it is empty
+            #![allow(unused_must_use)]
+            this.secondary_streams.remove(*empty_stream_index);
+        }
+
         if all_done {
             return Poll::Ready(None);
         }

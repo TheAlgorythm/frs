@@ -24,7 +24,7 @@ pub enum Error {
 
 pub async fn rename(opts: &cli::Cli, replacer: &replace::Replacer) -> Result<(), Error> {
     let done_targets = Rc::new(RwLock::new(HashSet::new()));
-    read_dir_recursive(&opts.base_path)
+    read_dir(&opts)
         .await?
         .filter_map(async move |file_entry| check_file_type(file_entry, opts).await)
         .try_filter(|file_path| {
@@ -40,6 +40,16 @@ pub async fn rename(opts: &cli::Cli, replacer: &replace::Replacer) -> Result<(),
         .await
 }
 
+async fn read_dir(
+    opts: &cli::Cli,
+) -> Result<Box<dyn Stream<Item = io::Result<fs::DirEntry>> + Unpin>, io::Error> {
+    if !opts.traverse_tree {
+        Ok(Box::new(fs::read_dir(&opts.base_path).await?))
+    } else {
+        read_dir_recursive(&opts.base_path).await
+    }
+}
+
 async fn read_dir_recursive(
     base_path: &PathBuf,
 ) -> Result<Box<dyn Stream<Item = io::Result<fs::DirEntry>> + Unpin>, io::Error> {
@@ -49,7 +59,7 @@ async fn read_dir_recursive(
                 Ok(sub_path) => Some(sub_path.clone()),
                 Err(_) => None,
             };
-            Box::pin(async move {
+            Box::pin(async {
                 let sub_path = sub_path?;
                 if !sub_path.file_type().await.ok()?.is_dir() {
                     return None;
