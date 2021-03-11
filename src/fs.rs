@@ -26,16 +26,16 @@ pub async fn rename(opts: &cli::Cli, replacer: &replace::Replacer) -> Result<(),
     let done_targets = Rc::new(RwLock::new(HashSet::new()));
     read_dir(&opts)
         .await?
-        .filter_map(async move |file_entry| check_file_type(file_entry, opts).await)
+        .filter_map(|file_entry| async { check_file_type(file_entry, opts).await })
         .try_filter(|file_path| {
             let done_targets = Rc::clone(&done_targets);
             let file_path = file_path.clone();
             async move { check_unique_pattern_match(&file_path, &replacer, done_targets).await }
         })
-        .map_ok(async move |file_path| rename_file_path(file_path, &replacer).await)
+        .map_ok(|file_path| async { rename_file_path(file_path, &replacer).await })
         .try_for_each_concurrent(None, |file_paths| {
             let done_targets = Rc::clone(&done_targets);
-            async move { process_file_rename(file_paths.await, opts, done_targets).await }
+            async { process_file_rename(file_paths.await, opts, done_targets).await }
         })
         .await
 }
