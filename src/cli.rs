@@ -31,7 +31,9 @@ pub struct Cli {
     #[structopt(short, long)]
     pub continue_on_error: bool,
 
-    /// TODO
+    /// This traverses the Directory Tree.
+    /// If set, the renaming of directories will be disabled by default, to prevent the renaming of
+    /// a directory and its inner files
     #[structopt(short = "T", long)]
     pub traverse_tree: bool,
 
@@ -106,7 +108,7 @@ impl Cli {
     fn set_types(&mut self) {
         let no_type_selected = !(self.file || self.directory || self.symlink);
         self.file |= no_type_selected;
-        self.directory |= no_type_selected;
+        self.directory |= no_type_selected && !self.traverse_tree;
         self.symlink |= no_type_selected;
     }
 }

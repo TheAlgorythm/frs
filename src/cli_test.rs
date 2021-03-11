@@ -182,3 +182,53 @@ fn not_file_filetypes_set() {
     assert!(cli.directory);
     assert!(cli.symlink);
 }
+
+#[test]
+fn no_filetype_set_with_traverse_tree() {
+    let mut cli = empty_cli();
+    cli.traverse_tree = true;
+
+    cli.set_types();
+    assert!(cli.file);
+    assert!(!cli.directory);
+    assert!(cli.symlink);
+}
+
+#[test]
+fn all_filetypes_set_with_traverse_tree() {
+    let mut cli = empty_cli();
+    cli.traverse_tree = true;
+    cli.file = true;
+    cli.directory = true;
+    cli.symlink = true;
+
+    cli.set_types();
+    assert!(cli.file);
+    assert!(cli.directory);
+    assert!(cli.symlink);
+}
+
+#[test]
+fn dir_filetype_set_with_traverse_tree() {
+    let mut cli = empty_cli();
+    cli.traverse_tree = true;
+    cli.directory = true;
+
+    cli.set_types();
+    assert!(!cli.file);
+    assert!(cli.directory);
+    assert!(!cli.symlink);
+}
+
+#[test]
+fn not_dir_filetypes_set_with_traverse_tree() {
+    let mut cli = empty_cli();
+    cli.traverse_tree = true;
+    cli.file = true;
+    cli.symlink = true;
+
+    cli.set_types();
+    assert!(cli.file);
+    assert!(!cli.directory);
+    assert!(cli.symlink);
+}
