@@ -75,10 +75,8 @@ where
 
         let mut empty_secondary_streams = Vec::new();
         for (stream_index, secondary_stream) in this.secondary_streams.iter_mut().enumerate() {
-            // for secondary_stream in this.secondary_streams.iter_mut() {
             match secondary_stream.poll_next_unpin(cx) {
                 Poll::Ready(Some(item)) => return Poll::Ready(Some(item)),
-                // Poll::Ready(None) => {}
                 Poll::Ready(None) => empty_secondary_streams.push(stream_index),
                 Poll::Pending => all_done = false,
             }
