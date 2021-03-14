@@ -11,10 +11,12 @@ extern crate matches;
 #[macro_use]
 extern crate maplit;
 
+#[macro_use]
+mod utils;
+
 mod cli;
 mod fs;
 mod replace;
-mod utils;
 
 use colored::Colorize;
 use structopt::StructOpt;
