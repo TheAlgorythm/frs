@@ -12,26 +12,27 @@ Rename files with RegEx patterns.
 $ frs --help
 
 USAGE:
-  frs [FLAGS] <search-pattern> <replace-pattern> [base-path]
+    frs [FLAGS] <search-pattern> <replace-pattern> [base-path]
 
 FLAGS:
-  -i, --case-insensetive
-  -c, --continue-on-error
-  -d, --directory            Rename all matching directories. If no type is set, then everything will be renamed
-  -n, --dry-run              This is the default and lets you run it without the actual operation
-  -f, --file                 Rename all matching files. If no type is set, then everything will be renamed
-  -h, --help                 Prints help information
-  -r, --run                  Actually running the rename operation. If you want to set this as default, set the
-                            environment variable `FRS_DEFAULT_OP` to `RUN`
-  -s, --symlink              Rename all matching symlinks. If no type is set, then everything will be renamed
-  -T, --traverse-tree        TODO
-  -V, --version              Prints version information
-  -v, --verbose              Set the verbosity. In a dry-run its automatically set to 1
+    -i, --case-insensetive
+    -c, --continue-on-error
+    -d, --directory            Rename all matching directories. If no type is set, then everything will be renamed
+    -n, --dry-run              This is the default and lets you run it without the actual operation
+    -f, --file                 Rename all matching files. If no type is set, then everything will be renamed
+    -h, --help                 Prints help information
+    -r, --run                  Actually running the rename operation. If you want to set this as default, set the
+                               environment variable `FRS_DEFAULT_OP` to `RUN`
+    -s, --symlink              Rename all matching symlinks. If no type is set, then everything will be renamed
+    -T, --traverse-tree        This traverses the Directory Tree. If set, the renaming of directories will be disabled
+                               by default, to prevent the renaming of a directory and its inner files
+    -V, --version              Prints version information
+    -v, --verbose              Set the verbosity. In a dry-run its automatically set to 1
 
 ARGS:
-  <search-pattern>
-  <replace-pattern>
-  <base-path>           [default: .]
+    <search-pattern>
+    <replace-pattern>
+    <base-path>           [default: .]
 ```
 
 ### Example
@@ -49,7 +50,7 @@ test_folder/foo_01.txt -> test_folder/01_foo.txt
 Please check, that you have a recent version of Rust installed.
 
 ```zsh
-$ cargo +nightly install frs
+$ cargo install frs
 ```
 
 ## Setup
