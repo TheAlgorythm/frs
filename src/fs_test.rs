@@ -106,6 +106,43 @@ async fn simple_rename() {
 }
 
 #[async_std::test]
+async fn stop_handle_error_on_ok() {
+    let cli = empty_cli();
+    let files_result = Ok(5);
+
+    assert_matches!(handle_error_to_user(files_result, &cli).await, Some(Ok(_)));
+}
+
+#[async_std::test]
+async fn continue_handle_error_on_ok() {
+    let mut cli = empty_cli();
+    cli.continue_on_error = true;
+    let files_result = Ok(5);
+
+    assert_matches!(handle_error_to_user(files_result, &cli).await, Some(Ok(_)));
+}
+
+#[async_std::test]
+async fn stop_handle_error_on_error() {
+    let cli = empty_cli();
+    let files_result: Result<(), Error> = Err(Error::NonExistingParent(PathBuf::from("./old")));
+
+    assert_matches!(
+        handle_error_to_user(files_result, &cli).await,
+        Some(Err(Error::NonExistingParent(_)))
+    );
+}
+
+#[async_std::test]
+async fn continue_handle_error_on_error() {
+    let mut cli = empty_cli();
+    cli.continue_on_error = true;
+    let files_result: Result<(), Error> = Err(Error::NonExistingParent(PathBuf::from("./old")));
+
+    assert_matches!(handle_error_to_user(files_result, &cli).await, None);
+}
+
+#[async_std::test]
 async fn stop_on_error() {
     let done_targets = Rc::new(RwLock::new(hashset![]));
     let cli = empty_cli();

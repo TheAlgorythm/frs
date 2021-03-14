@@ -1,7 +1,7 @@
+#![forbid(unsafe_code)]
 #![warn(clippy::use_self)]
 #![warn(clippy::wildcard_imports)]
 #![warn(clippy::clone_on_ref_ptr)]
-#![feature(async_closure)]
 
 #[cfg(test)]
 #[macro_use]
@@ -10,6 +10,9 @@ extern crate matches;
 #[cfg(test)]
 #[macro_use]
 extern crate maplit;
+
+#[macro_use]
+mod utils;
 
 mod cli;
 mod fs;

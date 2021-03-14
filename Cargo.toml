@@ -13,6 +13,8 @@ categories = ["command-line-utilities", "filesystem", "development-tools"]
 
 [dependencies]
 futures = "~0.3"
+futures-core = "~0.3"
+pin-project-lite = "~0.2"
 async-std = { version = "~1.9", features = ["attributes"] }
 regex = "~1.4"
 structopt = "~0.3"
