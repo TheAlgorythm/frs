@@ -5,6 +5,10 @@ use futures::{Future, FutureExt};
 use futures_core::task::{Context, Poll};
 use pin_project_lite::pin_project;
 
+#[cfg(test)]
+#[path = "./select_map_test.rs"]
+mod select_map_test;
+
 pub trait SelectMapExt: Stream {
     fn select_map<S2, F, Fut>(self, f: F) -> SelectMap<Self, S2, F, Fut>
     where
@@ -95,7 +99,7 @@ where
 
     fn size_hint(&self) -> (usize, Option<usize>) {
         (
-            self.primary_stream.size_hint().0.saturating_sub(
+            self.primary_stream.size_hint().0.saturating_add(
                 self.secondary_streams
                     .iter()
                     .map(|secondary_stream| secondary_stream.size_hint().0)
