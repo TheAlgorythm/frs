@@ -15,29 +15,36 @@ extern crate maplit;
 mod utils;
 
 mod cli;
+mod stats;
 mod fs;
 mod replace;
 
-use colored::Colorize;
 use structopt::StructOpt;
 
 #[async_std::main]
 async fn main() {
+    let mut stats = stats::Stats::new();
+
     let mut cli_opts = cli::Cli::from_args();
     if let Err(error) = cli_opts.post_automations() {
-        println!("{} {}!", "Error:".bright_red(), error);
+        stats.error(&error);
         return;
     }
+
+    stats.set_cli_opts(&cli_opts);
+
     let replacer = match replace::Replacer::new(&cli_opts) {
         Ok(replacer) => replacer,
         Err(error) => {
-            println!("{} {}!", "Error:".bright_red(), error);
+            stats.error(&error);
             return;
         }
     };
 
-    if let Err(error) = fs::rename(&cli_opts, &replacer).await {
-        println!("{} {}!", "Error:".bright_red(), error);
+    if let Err(error) = fs::rename(&cli_opts, &replacer, &stats).await {
+        stats.error(&error);
         return;
     }
+
+    stats.print();
 }

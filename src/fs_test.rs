@@ -1,4 +1,5 @@
-use super::cli::cli_test::empty_cli;
+use crate::cli::cli_test::empty_cli;
+use crate::stats::Stats;
 use super::*;
 use crate::replace::replace_test::{empty_replacer, restrictive_replacer};
 
@@ -110,7 +111,7 @@ async fn stop_handle_error_on_ok() {
     let cli = empty_cli();
     let files_result = Ok(5);
 
-    assert_matches!(handle_error_to_user(files_result, &cli).await, Some(Ok(_)));
+    assert_matches!(handle_error_to_user(files_result, &cli, &Stats::new()).await, Some(Ok(_)));
 }
 
 #[async_std::test]
@@ -119,7 +120,7 @@ async fn continue_handle_error_on_ok() {
     cli.continue_on_error = true;
     let files_result = Ok(5);
 
-    assert_matches!(handle_error_to_user(files_result, &cli).await, Some(Ok(_)));
+    assert_matches!(handle_error_to_user(files_result, &cli, &Stats::new()).await, Some(Ok(_)));
 }
 
 #[async_std::test]
@@ -128,7 +129,7 @@ async fn stop_handle_error_on_error() {
     let files_result: Result<(), Error> = Err(Error::NonExistingParent(PathBuf::from("./old")));
 
     assert_matches!(
-        handle_error_to_user(files_result, &cli).await,
+        handle_error_to_user(files_result, &cli, &Stats::new()).await,
         Some(Err(Error::NonExistingParent(_)))
     );
 }
@@ -139,7 +140,7 @@ async fn continue_handle_error_on_error() {
     cli.continue_on_error = true;
     let files_result: Result<(), Error> = Err(Error::NonExistingParent(PathBuf::from("./old")));
 
-    assert_matches!(handle_error_to_user(files_result, &cli).await, None);
+    assert_matches!(handle_error_to_user(files_result, &cli, &Stats::new()).await, None);
 }
 
 #[async_std::test]
@@ -149,7 +150,7 @@ async fn stop_on_error() {
     let files_result = Err(Error::NonExistingParent(PathBuf::from("./old")));
 
     assert_matches!(
-        process_file_rename(files_result, &cli, done_targets).await,
+        process_file_rename(files_result, &cli, done_targets, &Stats::new()).await,
         Err(Error::NonExistingParent(_))
     );
 }
@@ -162,7 +163,7 @@ async fn continue_on_error() {
     let files_result = Err(Error::NonExistingParent(PathBuf::from("./old")));
 
     assert_matches!(
-        process_file_rename(files_result, &cli, done_targets).await,
+        process_file_rename(files_result, &cli, done_targets, &Stats::new()).await,
         Ok(())
     );
 }
@@ -177,7 +178,7 @@ async fn add_to_done() {
     {
         let done_targets = done_targets.clone();
         assert_matches!(
-            process_file_rename(files_result, &cli, done_targets).await,
+            process_file_rename(files_result, &cli, done_targets, &Stats::new()).await,
             Ok(())
         );
     }

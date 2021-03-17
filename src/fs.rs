@@ -1,9 +1,9 @@
 use super::cli;
 use super::replace;
+use super::stats::Stats;
 use crate::utils::SelectMapExt;
 use async_std::sync::RwLock;
 use async_std::{fs, io, path::PathBuf, stream};
-use colored::Colorize;
 use futures::stream::{Stream, StreamExt, TryStreamExt};
 use std::collections::HashSet;
 use std::rc::Rc;
@@ -22,7 +22,7 @@ pub enum Error {
     NonExistingParent(PathBuf),
 }
 
-pub async fn rename(opts: &cli::Cli, replacer: &replace::Replacer) -> Result<(), Error> {
+pub async fn rename(opts: &cli::Cli, replacer: &replace::Replacer, stats: &Stats) -> Result<(), Error> {
     let done_targets = Rc::new(RwLock::new(HashSet::new()));
     read_dir(&opts)
         .await?
@@ -33,10 +33,10 @@ pub async fn rename(opts: &cli::Cli, replacer: &replace::Replacer) -> Result<(),
             async move { check_unique_pattern_match(&file_path, &replacer, done_targets).await }
         })
         .map_ok(|file_path| async { rename_file_path(file_path, &replacer).await })
-        .filter_map(|file_paths| async { handle_error_to_user(file_paths, opts).await })
+        .filter_map(|file_paths| async { handle_error_to_user(file_paths, opts, &stats).await })
         .try_for_each_concurrent(None, |file_paths| {
             let done_targets = Rc::clone(&done_targets);
-            async { process_file_rename(file_paths.await, opts, done_targets).await }
+            async { process_file_rename(file_paths.await, opts, done_targets, &stats).await }
         })
         .await
 }
@@ -124,12 +124,13 @@ async fn rename_file_path(
 async fn handle_error_to_user<T>(
     file_paths: Result<T, Error>,
     opts: &cli::Cli,
+    stats: &Stats,
 ) -> Option<Result<T, Error>> {
     match (file_paths, opts.continue_on_error) {
         (Ok(file_paths), _) => Some(Ok(file_paths)),
         (Err(error), false) => Some(Err(error)),
         (Err(error), true) => {
-            println!("{} {}", "Error:".bright_red(), error);
+            stats.error(&error);
             None
         }
     }
@@ -139,30 +140,25 @@ async fn process_file_rename(
     file_paths: Result<(PathBuf, PathBuf), Error>,
     opts: &cli::Cli,
     done_targets: Rc<RwLock<HashSet<PathBuf>>>,
+    stats: &Stats,
 ) -> Result<(), Error> {
     let (old_file_path, new_file_path) = match (file_paths, opts.continue_on_error) {
         (Ok(file_paths), _) => file_paths,
         (Err(error), false) => return Err(error),
         (Err(error), true) => {
-            println!("{} {}", "Error:".bright_red(), error);
+            stats.error(&error);
             return Ok(());
         }
     };
 
     done_targets.write().await.insert(new_file_path.clone());
 
-    if opts.verbose >= 1 {
-        println!(
-            "{} {} {}",
-            old_file_path.to_string_lossy().red(),
-            "->".blue(),
-            new_file_path.to_string_lossy().green()
-        );
-    }
+    stats.rename(&old_file_path, &new_file_path);
+
     if opts.run {
         if let Err(error) = fs::rename(old_file_path, new_file_path).await {
             if opts.continue_on_error {
-                println!("{} {}", "Error:".bright_red(), error);
+                stats.error(&error);
                 return Ok(());
             } else {
                 return Err(error.into());
