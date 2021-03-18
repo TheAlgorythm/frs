@@ -46,5 +46,5 @@ async fn main() {
         return;
     }
 
-    stats.print();
+    stats.print_summary();
 }

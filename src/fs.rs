@@ -27,16 +27,16 @@ pub async fn rename(opts: &cli::Cli, replacer: &replace::Replacer, stats: &Stats
     read_dir(&opts)
         .await?
         .filter_map(|file_entry| async { check_file_type(file_entry, opts).await })
-        .try_filter(|file_path| {
+        .try_filter(|file| {
             let done_targets = Rc::clone(&done_targets);
-            let file_path = file_path.clone();
-            async move { check_unique_pattern_match(&file_path, &replacer, done_targets).await }
+            let file = file.clone();
+            async move { check_unique_pattern_match(&file, &replacer, done_targets).await }
         })
-        .map_ok(|file_path| async { rename_file_path(file_path, &replacer).await })
-        .filter_map(|file_paths| async { handle_error_to_user(file_paths, opts, &stats).await })
-        .try_for_each_concurrent(None, |file_paths| {
+        .map_ok(|file| async { rename_file_path(file, &replacer).await })
+        .filter_map(|rename_info| async { handle_error_to_user(rename_info, opts, &stats).await })
+        .try_for_each_concurrent(None, |rename_info| {
             let done_targets = Rc::clone(&done_targets);
-            async { process_file_rename(file_paths.await, opts, done_targets, &stats).await }
+            async { process_file_rename(rename_info.await, opts, done_targets, &stats).await }
         })
         .await
 }
@@ -76,49 +76,63 @@ async fn read_dir_recursive(
     )))
 }
 
+#[derive(Debug, Clone)]
+pub struct FileInfo {
+    pub path: PathBuf,
+    pub file_type: fs::FileType,
+}
+
 async fn check_file_type(
-    file_path: io::Result<fs::DirEntry>,
+    file_entry: io::Result<fs::DirEntry>,
     opts: &cli::Cli,
-) -> Option<Result<PathBuf, Error>> {
-    let file_path = try_wrap_err!(file_path);
-    let file_type = try_wrap_err!(file_path.file_type().await);
+) -> Option<Result<FileInfo, Error>> {
+    let file_entry = try_wrap_err!(file_entry);
+    let file_type = try_wrap_err!(file_entry.file_type().await);
 
     if (file_type.is_file() && opts.file)
         || (file_type.is_dir() && opts.directory)
         || (file_type.is_symlink() && opts.symlink)
     {
-        return Some(Ok(file_path.path()));
+        return Some(Ok(FileInfo {
+            path: file_entry.path(),
+            file_type: file_type,
+        }));
     }
     None
 }
 
 async fn check_unique_pattern_match(
-    file_path: &PathBuf,
+    file: &FileInfo,
     replacer: &replace::Replacer,
     done_targets: Rc<RwLock<HashSet<PathBuf>>>,
 ) -> bool {
-    !done_targets.read().await.contains(file_path) && replacer.is_match(file_path).unwrap_or(true)
+    !done_targets.read().await.contains(&file.path) && replacer.is_match(&file.path).unwrap_or(true)
+}
+
+pub struct RenameInfo {
+    pub old_file: FileInfo,
+    pub new_path: PathBuf,
 }
 
 async fn rename_file_path(
-    file_path: PathBuf,
+    old_file: FileInfo,
     replacer: &replace::Replacer,
-) -> Result<(PathBuf, PathBuf), Error> {
-    let new_file_path = replacer.replace(&file_path)?;
-    if !new_file_path
+) -> Result<RenameInfo, Error> {
+    let new_path = replacer.replace(&old_file.path)?;
+    if !new_path
         .parent()
         .expect("Couldn't get parent!")
         .is_dir()
         .await
     {
         return Err(Error::NonExistingParent(
-            new_file_path
+            new_path
                 .parent()
                 .expect("Couldn't get parent!")
                 .to_path_buf(),
         ));
     }
-    Ok((file_path.clone(), new_file_path))
+    Ok(RenameInfo { old_file, new_path })
 }
 
 async fn handle_error_to_user<T>(
@@ -137,13 +151,13 @@ async fn handle_error_to_user<T>(
 }
 
 async fn process_file_rename(
-    file_paths: Result<(PathBuf, PathBuf), Error>,
+    rename_info: Result<RenameInfo, Error>,
     opts: &cli::Cli,
     done_targets: Rc<RwLock<HashSet<PathBuf>>>,
     stats: &Stats,
 ) -> Result<(), Error> {
-    let (old_file_path, new_file_path) = match (file_paths, opts.continue_on_error) {
-        (Ok(file_paths), _) => file_paths,
+    let rename_info = match (rename_info, opts.continue_on_error) {
+        (Ok(rename_info), _) => rename_info,
         (Err(error), false) => return Err(error),
         (Err(error), true) => {
             stats.error(&error);
@@ -151,12 +165,12 @@ async fn process_file_rename(
         }
     };
 
-    done_targets.write().await.insert(new_file_path.clone());
+    done_targets.write().await.insert(rename_info.new_path.clone());
 
-    stats.rename(&old_file_path, &new_file_path);
+    stats.rename(&rename_info);
 
     if opts.run {
-        if let Err(error) = fs::rename(old_file_path, new_file_path).await {
+        if let Err(error) = fs::rename(rename_info.old_file.path, rename_info.new_path).await {
             if opts.continue_on_error {
                 stats.error(&error);
                 return Ok(());
