@@ -12,6 +12,9 @@ use std::rc::Rc;
 #[path = "./fs_test.rs"]
 mod fs_test;
 
+#[cfg(test)]
+use fs_test::FileInfo;
+
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
     #[error(transparent)]
@@ -76,10 +79,21 @@ async fn read_dir_recursive(
     )))
 }
 
+#[cfg(not(test))]
 #[derive(Debug, Clone)]
 pub struct FileInfo {
     pub path: PathBuf,
     pub file_type: fs::FileType,
+}
+
+#[cfg(not(test))]
+impl FileInfo {
+    fn new(path: PathBuf, file_type: fs::FileType) -> Self {
+        Self {
+            path,
+            file_type,
+        }
+    }
 }
 
 async fn check_file_type(
@@ -93,10 +107,7 @@ async fn check_file_type(
         || (file_type.is_dir() && opts.directory)
         || (file_type.is_symlink() && opts.symlink)
     {
-        return Some(Ok(FileInfo {
-            path: file_entry.path(),
-            file_type: file_type,
-        }));
+        return Some(Ok(FileInfo::new(file_entry.path(), file_type)));
     }
     None
 }
@@ -109,6 +120,8 @@ async fn check_unique_pattern_match(
     !done_targets.read().await.contains(&file.path) && replacer.is_match(&file.path).unwrap_or(true)
 }
 
+#[derive(Debug, Clone)]
+#[cfg_attr(test, derive(PartialEq))]
 pub struct RenameInfo {
     pub old_file: FileInfo,
     pub new_path: PathBuf,
