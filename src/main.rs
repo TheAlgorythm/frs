@@ -15,9 +15,9 @@ extern crate maplit;
 mod utils;
 
 mod cli;
-mod stats;
 mod fs;
 mod replace;
+mod stats;
 
 use structopt::StructOpt;
 

@@ -25,7 +25,11 @@ pub enum Error {
     NonExistingParent(PathBuf),
 }
 
-pub async fn rename(opts: &cli::Cli, replacer: &replace::Replacer, stats: &Stats) -> Result<(), Error> {
+pub async fn rename(
+    opts: &cli::Cli,
+    replacer: &replace::Replacer,
+    stats: &Stats,
+) -> Result<(), Error> {
     let done_targets = Rc::new(RwLock::new(HashSet::new()));
     read_dir(&opts)
         .await?
@@ -89,10 +93,7 @@ pub struct FileInfo {
 #[cfg(not(test))]
 impl FileInfo {
     fn new(path: PathBuf, file_type: fs::FileType) -> Self {
-        Self {
-            path,
-            file_type,
-        }
+        Self { path, file_type }
     }
 }
 
@@ -178,7 +179,10 @@ async fn process_file_rename(
         }
     };
 
-    done_targets.write().await.insert(rename_info.new_path.clone());
+    done_targets
+        .write()
+        .await
+        .insert(rename_info.new_path.clone());
 
     stats.rename(&rename_info);
 

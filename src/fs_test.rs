@@ -1,7 +1,7 @@
-use crate::cli::cli_test::empty_cli;
-use crate::stats::Stats;
 use super::*;
+use crate::cli::cli_test::empty_cli;
 use crate::replace::replace_test::{empty_replacer, restrictive_replacer};
+use crate::stats::Stats;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum FileType {
@@ -61,7 +61,10 @@ async fn already_done_matching_target() {
         PathBuf::from("done-2")
     ]));
 
-    assert!(!check_unique_pattern_match(&FileInfo::file(done_path), &empty_replacer(), done_targets).await);
+    assert!(
+        !check_unique_pattern_match(&FileInfo::file(done_path), &empty_replacer(), done_targets)
+            .await
+    );
 }
 
 #[async_std::test]
@@ -72,7 +75,12 @@ async fn not_done_matching_target() {
     ]));
 
     assert!(
-        check_unique_pattern_match(&FileInfo::file(PathBuf::from("/new")), &empty_replacer(), done_targets).await
+        check_unique_pattern_match(
+            &FileInfo::file(PathBuf::from("/new")),
+            &empty_replacer(),
+            done_targets
+        )
+        .await
     );
 }
 
@@ -84,7 +92,14 @@ async fn already_done_not_matching_target() {
         PathBuf::from("done-2")
     ]));
 
-    assert!(!check_unique_pattern_match(&FileInfo::file(done_path), &restrictive_replacer(), done_targets).await);
+    assert!(
+        !check_unique_pattern_match(
+            &FileInfo::file(done_path),
+            &restrictive_replacer(),
+            done_targets
+        )
+        .await
+    );
 }
 
 #[async_std::test]
@@ -112,8 +127,12 @@ async fn pass_matching_error() {
     ]));
 
     assert!(
-        check_unique_pattern_match(&FileInfo::file(PathBuf::from("..")), &restrictive_replacer(), done_targets)
-            .await
+        check_unique_pattern_match(
+            &FileInfo::file(PathBuf::from("..")),
+            &restrictive_replacer(),
+            done_targets
+        )
+        .await
     );
 }
 
@@ -128,7 +147,11 @@ async fn rename_invalid_filename() {
 #[async_std::test]
 async fn rename_without_parent() {
     assert_matches!(
-        rename_file_path(FileInfo::file(PathBuf::from("non_existant/_old")), &restrictive_replacer()).await,
+        rename_file_path(
+            FileInfo::file(PathBuf::from("non_existant/_old")),
+            &restrictive_replacer()
+        )
+        .await,
         Err(Error::NonExistingParent(_))
     );
 }
@@ -142,7 +165,7 @@ async fn simple_rename() {
         rename_file_path(old_file.clone(), &restrictive_replacer())
             .await
             .unwrap(),
-        RenameInfo { old_file, new_path}
+        RenameInfo { old_file, new_path }
     );
 }
 
@@ -151,7 +174,10 @@ async fn stop_handle_error_on_ok() {
     let cli = empty_cli();
     let files_result = Ok(5);
 
-    assert_matches!(handle_error_to_user(files_result, &cli, &Stats::new()).await, Some(Ok(_)));
+    assert_matches!(
+        handle_error_to_user(files_result, &cli, &Stats::new()).await,
+        Some(Ok(_))
+    );
 }
 
 #[async_std::test]
@@ -160,7 +186,10 @@ async fn continue_handle_error_on_ok() {
     cli.continue_on_error = true;
     let files_result = Ok(5);
 
-    assert_matches!(handle_error_to_user(files_result, &cli, &Stats::new()).await, Some(Ok(_)));
+    assert_matches!(
+        handle_error_to_user(files_result, &cli, &Stats::new()).await,
+        Some(Ok(_))
+    );
 }
 
 #[async_std::test]
@@ -180,7 +209,10 @@ async fn continue_handle_error_on_error() {
     cli.continue_on_error = true;
     let files_result: Result<(), Error> = Err(Error::NonExistingParent(PathBuf::from("./old")));
 
-    assert_matches!(handle_error_to_user(files_result, &cli, &Stats::new()).await, None);
+    assert_matches!(
+        handle_error_to_user(files_result, &cli, &Stats::new()).await,
+        None
+    );
 }
 
 #[async_std::test]
@@ -213,7 +245,10 @@ async fn add_to_done() {
     let done_targets = Rc::new(RwLock::new(hashset![]));
     let cli = empty_cli();
     let new_path = PathBuf::from("./new");
-    let files_result = Ok(RenameInfo {old_file: FileInfo::file(PathBuf::from("./old")), new_path: new_path.clone()});
+    let files_result = Ok(RenameInfo {
+        old_file: FileInfo::file(PathBuf::from("./old")),
+        new_path: new_path.clone(),
+    });
 
     {
         let done_targets = done_targets.clone();
