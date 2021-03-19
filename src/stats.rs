@@ -32,11 +32,11 @@ impl Stats {
             renamed_files: Cell::new(0),
             renamed_directories: Cell::new(0),
             renamed_symlinks: Cell::new(0),
-            rename_arrow: "\u{21d2} ".to_string(),
-            error_icon: "\u{f00d} ".to_string(),
-            file_icon: "\u{f15b} ".to_string(),
-            dir_icon: "\u{f07c} ".to_string(),
-            symlink_icon: "\u{f481} ".to_string(),
+            rename_arrow: "=>".to_string(),
+            error_icon: String::new(),
+            file_icon: String::new(),
+            dir_icon: String::new(),
+            symlink_icon: String::new(),
         }
     }
 
@@ -44,6 +44,13 @@ impl Stats {
         self.show_renames = opts.verbose >= 2;
         self.show_summary = opts.verbose >= 1;
         self.base_path = opts.base_path.to_string_lossy().to_string();
+        if opts.icons {
+            self.rename_arrow = "\u{21d2}".to_string();
+            self.error_icon = "\u{f00d} ".to_string();
+            self.file_icon = "\u{f15b} ".to_string();
+            self.dir_icon = "\u{f07c} ".to_string();
+            self.symlink_icon = "\u{f481} ".to_string();
+        }
     }
 
     pub fn error(&self, error: &dyn std::fmt::Display) {
