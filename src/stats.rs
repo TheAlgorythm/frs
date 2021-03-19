@@ -10,6 +10,7 @@ use std::cell::Cell;
 pub struct Stats {
     show_renames: bool,
     show_summary: bool,
+    operation_mode: String,
     base_path: String,
     errors: Cell<u32>,
     renamed_files: Cell<u32>,
@@ -27,6 +28,7 @@ impl Stats {
         Self {
             show_renames: false,
             show_summary: false,
+            operation_mode: String::new(),
             base_path: String::new(),
             errors: Cell::new(0),
             renamed_files: Cell::new(0),
@@ -44,6 +46,11 @@ impl Stats {
         self.show_renames = opts.verbose >= 2;
         self.show_summary = opts.verbose >= 1;
         self.base_path = opts.base_path.to_string_lossy().to_string();
+        if opts.run {
+            self.operation_mode = "RUN".to_string();
+        } else if opts.dry_run {
+            self.operation_mode = "DRY-RUN".to_string();
+        }
         if opts.icons {
             self.rename_arrow = "\u{21d2}".to_string();
             self.error_icon = "\u{f00d} ".to_string();
@@ -81,6 +88,15 @@ impl Stats {
         }
     }
 
+    fn has_output(&self) -> bool {
+        self.errors.get() != 0
+            || (self.show_renames
+                && (self.renamed_files.get()
+                    + self.renamed_directories.get()
+                    + self.renamed_symlinks.get())
+                    != 0)
+    }
+
     pub fn print_summary(&self) {
         if !self.show_summary {
             return;
@@ -89,10 +105,15 @@ impl Stats {
         let mut num_formater = human_format::Formatter::new();
         let num_formater = num_formater.with_decimals(0).with_separator("");
 
+        if self.has_output() {
+            println!();
+        }
+
         println!(
-            "{} for {}:",
-            "Results".bold(),
-            self.base_path.underline().italic()
+            "{} for {} ({}):",
+            "Results".bold().bright_magenta(),
+            self.base_path.underline().italic(),
+            self.operation_mode
         );
 
         let mut infos = Vec::new();
@@ -108,10 +129,10 @@ impl Stats {
         }
         if self.renamed_files.get() != 0 {
             infos.push(vec![
-                format!("{}Files", self.file_icon.cyan()).cell(),
+                format!("{}Files", self.file_icon.bright_yellow()).cell(),
                 num_formater
                     .format(self.renamed_files.get() as f64)
-                    .cyan()
+                    .bright_yellow()
                     .cell()
                     .justify(Justify::Right),
             ]);
