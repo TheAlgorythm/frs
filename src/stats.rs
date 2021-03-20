@@ -7,6 +7,10 @@ use cli_table::{
 use colored::Colorize;
 use std::cell::Cell;
 
+#[cfg(test)]
+#[path = "./stats_test.rs"]
+pub mod stats_test;
+
 pub struct Stats {
     show_renames: bool,
     show_summary: bool,

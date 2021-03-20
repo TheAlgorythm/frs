@@ -13,7 +13,7 @@ use std::rc::Rc;
 mod fs_test;
 
 #[cfg(test)]
-use fs_test::FileInfo;
+pub use fs_test::FileInfo;
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
