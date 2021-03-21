@@ -52,6 +52,15 @@ pub struct Cli {
     #[structopt(short = "i", long)]
     pub case_insensetive: bool,
 
+    #[structopt(
+        short,
+        long,
+        default_value = "true",
+        env = "FRS_SHOW_ICONS",
+        parse(try_from_str)
+    )]
+    pub icons: bool,
+
     pub search_pattern: String,
     pub replace_pattern: String,
 

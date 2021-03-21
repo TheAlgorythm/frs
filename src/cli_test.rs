@@ -11,6 +11,7 @@ pub fn empty_cli() -> Cli {
         symlink: false,
         traverse_tree: false,
         verbose: 0,
+        icons: false,
         search_pattern: String::new(),
         replace_pattern: String::new(),
         base_path: PathBuf::new(),
