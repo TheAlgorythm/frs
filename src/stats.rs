@@ -6,6 +6,7 @@ use cli_table::{
 };
 use colored::Colorize;
 use std::cell::Cell;
+use terminal_size::{terminal_size, Width};
 
 #[cfg(test)]
 #[path = "./stats_test.rs"]
@@ -20,6 +21,8 @@ pub struct Stats {
     renamed_files: Cell<u32>,
     renamed_directories: Cell<u32>,
     renamed_symlinks: Cell<u32>,
+    middle_col: usize,
+    max_indent: Cell<usize>,
     rename_arrow: String,
     error_icon: String,
     file_icon: String,
@@ -29,6 +32,11 @@ pub struct Stats {
 
 impl Stats {
     pub fn new() -> Self {
+        let middle_col = match terminal_size() {
+            Some((Width(w), _)) => (w as usize / 2).saturating_sub(2),
+            None => 0,
+        };
+
         Self {
             show_renames: false,
             show_summary: false,
@@ -39,6 +47,8 @@ impl Stats {
             renamed_directories: Cell::new(0),
             renamed_symlinks: Cell::new(0),
             rename_arrow: "=>".to_string(),
+            middle_col,
+            max_indent: Cell::new(0),
             error_icon: String::new(),
             file_icon: String::new(),
             dir_icon: String::new(),
@@ -73,11 +83,19 @@ impl Stats {
 
     pub fn rename(&self, rename_info: &RenameInfo) {
         if self.show_renames {
+            let old_path = rename_info.old_file.path.to_string_lossy();
+            self.max_indent
+                .set(self.max_indent.get().max(old_path.len()));
             println!(
-                "{} {} {}",
-                rename_info.old_file.path.to_string_lossy().red(),
-                self.rename_arrow.blue(),
-                rename_info.new_path.to_string_lossy().green()
+                "{old_path} {empty:indent$}{arrow} {new_path}",
+                old_path = old_path.red(),
+                new_path = rename_info.new_path.to_string_lossy().green(),
+                arrow = self.rename_arrow.blue(),
+                empty = "",
+                indent = self
+                    .middle_col
+                    .min(self.max_indent.get())
+                    .saturating_sub(old_path.len()),
             );
         }
         if self.show_summary {
