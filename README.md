@@ -6,13 +6,15 @@
 
 Rename files with RegEx patterns.
 
+$[Demo](https://zschoen.dev/img/frs_casts.svg)
+
 ## Usage
 
 ```zsh
 $ frs --help
 
 USAGE:
-    frs [FLAGS] <search-pattern> <replace-pattern> [base-path]
+    frs [FLAGS] [OPTIONS] <search-pattern> <replace-pattern> [base-path]
 
 FLAGS:
     -i, --case-insensetive
@@ -28,6 +30,9 @@ FLAGS:
                                by default, to prevent the renaming of a directory and its inner files
     -V, --version              Prints version information
     -v, --verbose              Set the verbosity. In a dry-run its automatically set to 1
+
+OPTIONS:
+    -i, --icons <icons>     [env: FRS_SHOW_ICONS=]  [default: true]
 
 ARGS:
     <search-pattern>
@@ -55,5 +60,18 @@ $ cargo install frs
 
 ## Setup
 
+### Operation Mode
+
 The default operation is to do a dry-run. To change this behavior, you have to set the `FRS_DEFAULT_OP` environment variable to `RUN`.
+
+### Icons
+
+![Nerd Font Icons](https://zschoen.dev/img/frs_icons.png)
+
+frs is able to show [Nerd Font](https://www.nerdfonts.com/) icons. If you don't use NF in your terminal you can disable it with the `--icons` option or with the `FRS_SHOW_ICONS` environment variable.
+This can be done e.g. on ZSH by adding this line to your ~/.zshenv:
+
+```zsh
+export FRS_SHOW_ICONS=false
+```
 
