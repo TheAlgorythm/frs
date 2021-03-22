@@ -6,7 +6,7 @@
 
 Rename files with RegEx patterns.
 
-$[Demo](https://zschoen.dev/img/frs_casts.svg)
+![Demo](https://zschoen.dev/img/frs_casts.svg)
 
 ## Usage
 
