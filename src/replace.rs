@@ -47,7 +47,7 @@ impl Replacer {
             .to_path_buf();
         new_path.push(
             self.search
-                .replace(
+                .replace_all(
                     file.file_name()
                         .ok_or_else(|| Error::InvalidFileName(file.to_path_buf()))?
                         .to_str()
