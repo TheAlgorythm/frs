@@ -7,7 +7,7 @@ use pin_project_lite::pin_project;
 
 #[cfg(test)]
 #[path = "./select_map_test.rs"]
-mod select_map_test;
+pub mod select_map_test;
 
 pub trait SelectMapExt: Stream {
     fn select_map<S2, F, Fut>(self, f: F) -> SelectMap<Self, S2, F, Fut>
