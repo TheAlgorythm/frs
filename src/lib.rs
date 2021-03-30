@@ -14,7 +14,11 @@ extern crate maplit;
 #[macro_use]
 pub mod utils;
 
-mod cli;
-mod fs;
-mod replace;
-mod stats;
+pub mod cli;
+pub mod fs;
+pub mod replace;
+pub mod stats;
+
+pub use cli::Cli;
+pub use replace::Replacer;
+pub use stats::Stats;
