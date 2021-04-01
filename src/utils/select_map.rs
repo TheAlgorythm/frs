@@ -17,9 +17,10 @@ pub trait SelectMapExt: Stream {
         Fut: Future<Output = Option<S2>> + Unpin,
         Self: Sized,
     {
+        let minimal_primaries = self.size_hint().0;
         SelectMap {
             primary_stream: self.fuse(),
-            pending_secondary_streams: Vec::new(),
+            pending_secondary_streams: Vec::with_capacity(minimal_primaries),
             secondary_streams: Vec::new(),
             f,
         }
