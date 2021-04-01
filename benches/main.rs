@@ -8,26 +8,58 @@ mod select_map_utils;
 use criterion::{async_executor::AsyncStdExecutor, criterion_group, criterion_main, Criterion};
 
 pub fn benchmark_select_map(c: &mut Criterion) {
-    c.bench_function("SelectMap 99 Stream", |b| {
-        b.to_async(AsyncStdExecutor)
-            .iter(|| select_map_utils::collected_99_stream())
-    });
-    c.bench_function("SelectMap 49 Stream", |b| {
-        b.to_async(AsyncStdExecutor)
-            .iter(|| select_map_utils::collected_49_stream())
-    });
-    c.bench_function("SelectMap 999 Stream", |b| {
-        b.to_async(AsyncStdExecutor)
-            .iter(|| select_map_utils::collected_999_stream())
-    });
-    c.bench_function("SelectMap Balanced 999 Stream", |b| {
-        b.to_async(AsyncStdExecutor)
-            .iter(|| select_map_utils::collected_balanced_999_stream())
-    });
-    c.bench_function("SelectMap Unbalanced 999 Stream", |b| {
-        b.to_async(AsyncStdExecutor)
-            .iter(|| select_map_utils::collected_unbalanced_999_stream())
-    });
+    for base in vec![8, 32] {
+        c.bench_function(
+            format!("SelectMap {base} Stream", base = base).as_str(),
+            |b| {
+                b.to_async(AsyncStdExecutor)
+                    .iter(|| select_map_utils::collected_eliminated_single_recursive_stream(base))
+            },
+        );
+        c.bench_function(
+            format!("SelectMap {base}x{base} Stream", base = base).as_str(),
+            |b| {
+                b.to_async(AsyncStdExecutor)
+                    .iter(|| select_map_utils::collected_single_recursive_stream(base))
+            },
+        );
+        c.bench_function(
+            format!("SelectMap {base}/2 Stream", base = base).as_str(),
+            |b| {
+                b.to_async(AsyncStdExecutor)
+                    .iter(|| select_map_utils::collected_filtered_single_recursive_stream(base))
+            },
+        );
+        c.bench_function(
+            format!("SelectMap {base}x{base}x{base} Stream", base = base).as_str(),
+            |b| {
+                b.to_async(AsyncStdExecutor)
+                    .iter(|| select_map_utils::collected_double_recursive_stream(base))
+            },
+        );
+        c.bench_function(
+            format!(
+                "SelectMap Balanced {base}x{base}x{base} Stream",
+                base = base
+            )
+            .as_str(),
+            |b| {
+                b.to_async(AsyncStdExecutor)
+                    .iter(|| select_map_utils::collected_balanced_double_recursive_stream(base))
+            },
+        );
+        c.bench_function(
+            format!(
+                "SelectMap Unbalanced {base}x{base}x{base} Stream",
+                base = base
+            )
+            .as_str(),
+            |b| {
+                b.to_async(AsyncStdExecutor)
+                    .iter(|| select_map_utils::collected_unbalanced_double_recursive_stream(base))
+            },
+        );
+    }
 }
 
 criterion_group!(benches, benchmark_select_map);

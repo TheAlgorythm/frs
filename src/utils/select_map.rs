@@ -21,7 +21,7 @@ pub trait SelectMapExt: Stream {
         SelectMap {
             primary_stream: self.fuse(),
             pending_secondary_streams: Vec::with_capacity(minimal_primaries),
-            secondary_streams: Vec::new(),
+            secondary_streams: Vec::with_capacity(minimal_primaries),
             f,
         }
     }
