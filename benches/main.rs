@@ -31,7 +31,18 @@ pub fn benchmark_select_map(c: &mut Criterion) {
             },
         );
         c.bench_function(
-            format!("SelectMap {base}x{base}x{base} Stream", base = base).as_str(),
+            format!(
+                "SelectMap non sleeping {base}x{base}x{base} Stream",
+                base = base
+            )
+            .as_str(),
+            |b| {
+                b.to_async(AsyncStdExecutor)
+                    .iter(|| select_map_utils::collected_non_sleeping_double_recursive_stream(base))
+            },
+        );
+        c.bench_function(
+            format!("SelectMap Normal {base}x{base}x{base} Stream", base = base).as_str(),
             |b| {
                 b.to_async(AsyncStdExecutor)
                     .iter(|| select_map_utils::collected_double_recursive_stream(base))
@@ -57,6 +68,28 @@ pub fn benchmark_select_map(c: &mut Criterion) {
             |b| {
                 b.to_async(AsyncStdExecutor)
                     .iter(|| select_map_utils::collected_unbalanced_double_recursive_stream(base))
+            },
+        );
+        c.bench_function(
+            format!(
+                "SelectMap non sleeping {base}x{base}x{base}x{base} Stream",
+                base = base
+            )
+            .as_str(),
+            |b| {
+                b.to_async(AsyncStdExecutor)
+                    .iter(|| select_map_utils::collected_non_sleeping_triple_recursive_stream(base))
+            },
+        );
+        c.bench_function(
+            format!(
+                "SelectMap Normal {base}x{base}x{base}x{base} Stream",
+                base = base
+            )
+            .as_str(),
+            |b| {
+                b.to_async(AsyncStdExecutor)
+                    .iter(|| select_map_utils::collected_triple_recursive_stream(base))
             },
         );
     }
