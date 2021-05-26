@@ -1,10 +1,10 @@
 use super::cli;
-use bool_ext::BoolExt;
 use super::replace;
 use super::stats::Stats;
 use crate::utils::SelectMapExt;
 use async_std::sync::RwLock;
 use async_std::{fs, io, path::PathBuf, stream};
+use bool_ext::BoolExt;
 use futures::stream::{Stream, StreamExt, TryStreamExt};
 use std::collections::HashSet;
 use std::rc::Rc;
@@ -107,7 +107,8 @@ async fn check_file_type(
 
     ((file_type.is_file() && opts.file)
         || (file_type.is_dir() && opts.directory)
-        || (file_type.is_symlink() && opts.symlink)).some_with(|| Ok(FileInfo::new(file_entry.path(), file_type)))
+        || (file_type.is_symlink() && opts.symlink))
+        .some_with(|| Ok(FileInfo::new(file_entry.path(), file_type)))
 }
 
 async fn check_unique_pattern_match(
@@ -135,13 +136,15 @@ async fn rename_file_path(
         .expect("Couldn't get parent!")
         .is_dir()
         .await
-        .err_with(|| Error::NonExistingParent(
-            new_path
-                .parent()
-                .expect("Couldn't get parent!")
-                .to_path_buf(),
-        ))?;
-    
+        .err_with(|| {
+            Error::NonExistingParent(
+                new_path
+                    .parent()
+                    .expect("Couldn't get parent!")
+                    .to_path_buf(),
+            )
+        })?;
+
     Ok(RenameInfo { old_file, new_path })
 }
 
