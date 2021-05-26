@@ -1,4 +1,5 @@
 use super::cli;
+use bool_ext::BoolExt;
 use super::replace;
 use super::stats::Stats;
 use crate::utils::SelectMapExt;
@@ -104,13 +105,9 @@ async fn check_file_type(
     let file_entry = try_wrap_err!(file_entry);
     let file_type = try_wrap_err!(file_entry.file_type().await);
 
-    if (file_type.is_file() && opts.file)
+    ((file_type.is_file() && opts.file)
         || (file_type.is_dir() && opts.directory)
-        || (file_type.is_symlink() && opts.symlink)
-    {
-        return Some(Ok(FileInfo::new(file_entry.path(), file_type)));
-    }
-    None
+        || (file_type.is_symlink() && opts.symlink)).some_with(|| Ok(FileInfo::new(file_entry.path(), file_type)))
 }
 
 async fn check_unique_pattern_match(
@@ -133,19 +130,18 @@ async fn rename_file_path(
     replacer: &replace::Replacer,
 ) -> Result<RenameInfo, Error> {
     let new_path = replacer.replace(&old_file.path)?;
-    if !new_path
+    new_path
         .parent()
         .expect("Couldn't get parent!")
         .is_dir()
         .await
-    {
-        return Err(Error::NonExistingParent(
+        .err_with(|| Error::NonExistingParent(
             new_path
                 .parent()
                 .expect("Couldn't get parent!")
                 .to_path_buf(),
-        ));
-    }
+        ))?;
+    
     Ok(RenameInfo { old_file, new_path })
 }
 

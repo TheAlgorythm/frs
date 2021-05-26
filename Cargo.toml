@@ -22,6 +22,7 @@ colored = "~2.0"
 cli-table = { version = "~0.4", default-features = false }
 human_format = "~1.0"
 thiserror = "~1.0"
+bool_ext = "~0.5"
 terminal_size = "~0.1"
 
 [dev-dependencies]

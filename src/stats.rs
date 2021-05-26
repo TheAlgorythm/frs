@@ -32,10 +32,8 @@ pub struct Stats {
 
 impl Stats {
     pub fn new() -> Self {
-        let middle_col = match terminal_size() {
-            Some((Width(w), _)) => (w as usize / 2).saturating_sub(2),
-            None => 0,
-        };
+        let middle_col =
+            terminal_size().map_or(0, |(Width(w), _)| (w as usize / 2).saturating_sub(2));
 
         Self {
             show_renames: false,
