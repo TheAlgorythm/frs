@@ -1,12 +1,13 @@
 [package]
 name = "frs"
-version = "0.4.0"
+version = "0.4.1"
 authors = ["ZSchoen <dev@zschoen.dev>"]
 edition = "2018"
 license = "MIT"
 readme = "README.md"
 homepage = "https://zschoen.dev/projects/frs"
 repository = "https://github.com/TheAlgorythm/frs"
+documentation = "https://docs.rs/crate/frs"
 description = "Rename files with RegEx patterns"
 keywords = ["rename", "find", "regex", "rename-files", "rename-directories"]
 categories = ["command-line-utilities", "filesystem", "development-tools"]
@@ -16,7 +17,7 @@ futures = "~0.3"
 futures-core = "~0.3"
 pin-project-lite = "~0.2"
 async-std = { version = "~1.9", features = ["attributes"] }
-regex = "~1.4"
+regex = "~1.5"
 structopt = "~0.3"
 colored = "~2.0"
 cli-table = { version = "~0.4", default-features = false }
