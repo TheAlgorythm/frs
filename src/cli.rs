@@ -55,7 +55,6 @@ pub struct Cli {
     pub case_insensetive: bool,
 
     #[structopt(
-        short,
         long,
         default_value = "true",
         env = "FRS_SHOW_ICONS",
