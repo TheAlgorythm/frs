@@ -33,7 +33,7 @@ FLAGS:
     -v, --verbose              Set the verbosity. In a dry-run its automatically set to 1
 
 OPTIONS:
-    -i, --icons <icons>     [env: FRS_SHOW_ICONS=]  [default: true]
+    -I, --icons <icons>     [env: FRS_SHOW_ICONS=]  [default: true]
 
 ARGS:
     <search-pattern>
