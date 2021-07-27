@@ -1,6 +1,6 @@
 [package]
 name = "frs"
-version = "0.4.1"
+version = "0.4.2"
 authors = ["ZSchoen <dev@zschoen.dev>"]
 edition = "2018"
 license = "GPL-3.0-or-later"
