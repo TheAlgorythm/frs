@@ -1,4 +1,6 @@
 use async_std::path::PathBuf;
+use bool_ext::BoolExt;
+use std::ops::Not;
 use structopt::{clap::AppSettings, StructOpt};
 
 #[cfg(test)]
@@ -53,7 +55,6 @@ pub struct Cli {
     pub case_insensetive: bool,
 
     #[structopt(
-        short,
         long,
         default_value = "true",
         env = "FRS_SHOW_ICONS",
@@ -79,10 +80,11 @@ impl Cli {
 
     /// checks and changes the running option according the environment varaiable
     fn set_operation_mode(&mut self) -> Result<(), Error> {
+        (self.run && self.dry_run)
+            .not()
+            .err(Error::MultipleOperationModes)?;
+
         let do_var_name = "FRS_DEFAULT_OP";
-        if self.run && self.dry_run {
-            return Err(Error::MultipleOperationModes);
-        }
         match std::env::var(do_var_name)
             .unwrap_or_else(|_| "DRY-RUN".to_string())
             .to_uppercase()

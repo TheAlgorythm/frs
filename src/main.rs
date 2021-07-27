@@ -2,6 +2,7 @@
 #![warn(clippy::use_self)]
 #![warn(clippy::wildcard_imports)]
 #![warn(clippy::clone_on_ref_ptr)]
+#![warn(clippy::cognitive_complexity)]
 
 use frs::{fs, Cli, Replacer, Stats};
 use structopt::StructOpt;

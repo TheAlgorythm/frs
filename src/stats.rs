@@ -12,6 +12,22 @@ use terminal_size::{terminal_size, Width};
 #[path = "./stats_test.rs"]
 pub mod stats_test;
 
+macro_rules! add_info {
+    ($infos:ident, $num_formater:ident, $info_name:literal, $elem:expr, $icon:expr, $color:ident) => {
+        let count = $elem.get();
+        if count != 0 {
+            $infos.push(vec![
+                format!("{}{}", $icon.$color(), $info_name).cell(),
+                $num_formater
+                    .format(count as f64)
+                    .$color()
+                    .cell()
+                    .justify(Justify::Right),
+            ]);
+        }
+    };
+}
+
 pub struct Stats {
     show_renames: bool,
     show_summary: bool,
@@ -148,49 +164,44 @@ impl Stats {
         );
 
         let mut infos = Vec::new();
-        if self.errors.get() != 0 {
-            infos.push(vec![
-                format!("{}Errors", self.error_icon.bright_red()).cell(),
-                num_formater
-                    .format(self.errors.get() as f64)
-                    .bright_red()
-                    .cell()
-                    .justify(Justify::Right),
-            ]);
-        }
-        if self.renamed_files.get() != 0 {
-            infos.push(vec![
-                format!("{}Files", self.file_icon.bright_yellow()).cell(),
-                num_formater
-                    .format(self.renamed_files.get() as f64)
-                    .bright_yellow()
-                    .cell()
-                    .justify(Justify::Right),
-            ]);
-        }
-        if self.renamed_directories.get() != 0 {
-            infos.push(vec![
-                format!("{}Directories", self.dir_icon.blue()).cell(),
-                num_formater
-                    .format(self.renamed_directories.get() as f64)
-                    .blue()
-                    .cell()
-                    .justify(Justify::Right),
-            ]);
-        }
-        if self.renamed_symlinks.get() != 0 {
-            infos.push(vec![
-                format!("{}Symlinks", self.symlink_icon.yellow()).cell(),
-                num_formater
-                    .format(self.renamed_symlinks.get() as f64)
-                    .yellow()
-                    .cell()
-                    .justify(Justify::Right),
-            ]);
-        }
+
+        add_info!(
+            infos,
+            num_formater,
+            "Errors",
+            self.errors,
+            self.error_icon,
+            bright_red
+        );
+        add_info!(
+            infos,
+            num_formater,
+            "Files",
+            self.renamed_files,
+            self.file_icon,
+            bright_yellow
+        );
+        add_info!(
+            infos,
+            num_formater,
+            "Directories",
+            self.renamed_directories,
+            self.dir_icon,
+            blue
+        );
+        add_info!(
+            infos,
+            num_formater,
+            "Symlinks",
+            self.renamed_symlinks,
+            self.symlink_icon,
+            yellow
+        );
+
         if infos.is_empty() {
             infos.push(vec!["Actions".cell(), 0.cell()]);
         }
+
         let info_table = infos
             .table()
             .border(Border::builder().build())

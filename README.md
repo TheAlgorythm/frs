@@ -3,6 +3,7 @@
 ![MIT License](https://img.shields.io/github/license/TheAlgorythm/frs?style=for-the-badge&logo=open-source-initiative)
 [![Workflow Status](https://img.shields.io/github/workflow/status/TheAlgorythm/frs/Rust?style=for-the-badge)](https://github.com/TheAlgorythm/frs/actions?query=workflow%3ARust)
 [![Crates.io](https://img.shields.io/crates/v/frs?style=for-the-badge&logo=rust)](https://crates.io/crates/frs)
+[![crev reviews](https://web.crev.dev/rust-reviews/badge/crev_count/frs.svg)](https://web.crev.dev/rust-reviews/crate/frs/)
 
 Rename files with RegEx patterns.
 
@@ -74,4 +75,17 @@ This can be done e.g. on ZSH by adding this line to your ~/.zshenv:
 ```zsh
 export FRS_SHOW_ICONS=false
 ```
+
+
+## CREV - Rust code reviews - Raise awareness
+
+Please, spread this info !\
+Open source code needs a community effort to express trustworthiness.\
+Start with reading the reviews of the crates you use. Example: [web.crev.dev/rust-reviews/crate/num-traits/](https://web.crev.dev/rust-reviews/crate/num-traits/) \
+Than install the CLI [cargo-crev](https://github.com/crev-dev/cargo-crev)\. Read the [Getting Started guide](https://github.com/crev-dev/cargo-crev/blob/master/cargo-crev/src/doc/getting_started.md). \
+On your Rust project, verify the trustworthiness of all dependencies, including transient dependencies with `cargo crev verify`\
+Write a new review ! \
+Describe the crates you trust. Or warn about the crate versions you think are dangerous.\
+Help other developers, inform them and share your opinion.\
+Use the helper on this webpage: [web.crev.dev/rust-reviews/review_new](https://web.crev.dev/rust-reviews/review_new)
 
