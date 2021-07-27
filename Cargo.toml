@@ -12,6 +12,12 @@ description = "Rename files with RegEx patterns"
 keywords = ["rename", "find", "regex", "rename-files", "rename-directories"]
 categories = ["command-line-utilities", "filesystem", "development-tools"]
 
+[profile.release]
+lto = "thin"
+
+[profile.bench]
+lto = "thin"
+
 [dependencies]
 futures = "~0.3"
 futures-core = "~0.3"
@@ -29,4 +35,9 @@ terminal_size = "~0.1"
 [dev-dependencies]
 matches = "~0.1"
 maplit = "~1.0"
+criterion = { version = "~0.3", features = ["async_std"] }
+
+[[bench]]
+name = "main"
+harness = false
 

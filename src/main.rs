@@ -4,29 +4,14 @@
 #![warn(clippy::clone_on_ref_ptr)]
 #![warn(clippy::cognitive_complexity)]
 
-#[cfg(test)]
-#[macro_use]
-extern crate matches;
-
-#[cfg(test)]
-#[macro_use]
-extern crate maplit;
-
-#[macro_use]
-mod utils;
-
-mod cli;
-mod fs;
-mod replace;
-mod stats;
-
+use frs::{fs, Cli, Replacer, Stats};
 use structopt::StructOpt;
 
 #[async_std::main]
 async fn main() {
-    let mut stats = stats::Stats::new();
+    let mut stats = Stats::new();
 
-    let mut cli_opts = cli::Cli::from_args();
+    let mut cli_opts = Cli::from_args();
     if let Err(error) = cli_opts.post_automations() {
         stats.error(&error);
         return;
@@ -34,7 +19,7 @@ async fn main() {
 
     stats.set_cli_opts(&cli_opts);
 
-    let replacer = match replace::Replacer::new(&cli_opts) {
+    let replacer = match Replacer::new(&cli_opts) {
         Ok(replacer) => replacer,
         Err(error) => {
             stats.error(&error);

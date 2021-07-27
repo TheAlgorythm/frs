@@ -46,11 +46,8 @@ pub struct Stats {
     symlink_icon: String,
 }
 
-impl Stats {
-    pub fn new() -> Self {
-        let middle_col =
-            terminal_size().map_or(0, |(Width(w), _)| (w as usize / 2).saturating_sub(2));
-
+impl Default for Stats {
+    fn default() -> Self {
         Self {
             show_renames: false,
             show_summary: false,
@@ -61,12 +58,26 @@ impl Stats {
             renamed_directories: Cell::new(0),
             renamed_symlinks: Cell::new(0),
             rename_arrow: "=>".to_string(),
-            middle_col,
+            middle_col: 0,
             max_indent: Cell::new(0),
             error_icon: String::new(),
             file_icon: String::new(),
             dir_icon: String::new(),
             symlink_icon: String::new(),
+        }
+    }
+}
+
+impl Stats {
+    pub fn new() -> Self {
+        let middle_col = match terminal_size() {
+            Some((Width(w), _)) => (w as usize / 2).saturating_sub(2),
+            None => 0,
+        };
+
+        Self {
+            middle_col,
+            ..Default::default()
         }
     }
 
