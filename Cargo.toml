@@ -33,6 +33,7 @@ bool_ext = "~0.5"
 terminal_size = "~0.1"
 
 [dev-dependencies]
+serial_test = "~0.5"
 matches = "~0.1"
 maplit = "~1.0"
 criterion = { version = "~0.3", features = ["async_std"] }

@@ -1,4 +1,5 @@
 use super::*;
+use serial_test::serial;
 
 pub fn empty_cli() -> Cli {
     Cli {
@@ -28,6 +29,7 @@ fn multiple_operation_modes() {
 }
 
 #[test]
+#[serial(env_var)]
 fn invalid_env_var() {
     let mut cli = empty_cli();
 
@@ -39,6 +41,7 @@ fn invalid_env_var() {
 }
 
 #[test]
+#[serial(env_var)]
 fn default_operation_run() {
     let mut cli = empty_cli();
     std::env::set_var("FRS_DEFAULT_OP", "run");
@@ -49,6 +52,7 @@ fn default_operation_run() {
 }
 
 #[test]
+#[serial(env_var)]
 fn default_operation_run_with_run() {
     let mut cli = empty_cli();
     cli.run = true;
@@ -60,6 +64,7 @@ fn default_operation_run_with_run() {
 }
 
 #[test]
+#[serial(env_var)]
 fn default_operation_run_with_dry_run() {
     let mut cli = empty_cli();
     cli.dry_run = true;
@@ -71,6 +76,7 @@ fn default_operation_run_with_dry_run() {
 }
 
 #[test]
+#[serial(env_var)]
 fn default_operation_dry_run() {
     let mut cli = empty_cli();
     std::env::set_var("FRS_DEFAULT_OP", "dry-run");
@@ -81,6 +87,7 @@ fn default_operation_dry_run() {
 }
 
 #[test]
+#[serial(env_var)]
 fn default_operation_dry_run_with_run() {
     let mut cli = empty_cli();
     cli.run = true;
@@ -92,6 +99,7 @@ fn default_operation_dry_run_with_run() {
 }
 
 #[test]
+#[serial(env_var)]
 fn default_operation_dry_run_with_dry_run() {
     let mut cli = empty_cli();
     cli.dry_run = true;
