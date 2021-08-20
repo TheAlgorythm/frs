@@ -32,19 +32,19 @@ pub async fn rename(
     stats: &Stats,
 ) -> Result<(), Error> {
     let done_targets = Rc::new(RwLock::new(HashSet::new()));
-    read_dir(&opts)
+    read_dir(opts)
         .await?
         .filter_map(|file_entry| async { check_file_type(file_entry, opts).await })
         .try_filter(|file| {
             let done_targets = Rc::clone(&done_targets);
             let file = file.clone();
-            async move { check_unique_pattern_match(&file, &replacer, done_targets).await }
+            async move { check_unique_pattern_match(&file, replacer, done_targets).await }
         })
-        .map_ok(|file| async { rename_file_path(file, &replacer).await })
-        .filter_map(|rename_info| async { handle_error_to_user(rename_info, opts, &stats).await })
+        .map_ok(|file| async { rename_file_path(file, replacer).await })
+        .filter_map(|rename_info| async { handle_error_to_user(rename_info, opts, stats).await })
         .try_for_each_concurrent(None, |rename_info| {
             let done_targets = Rc::clone(&done_targets);
-            async { process_file_rename(rename_info.await, opts, done_targets, &stats).await }
+            async { process_file_rename(rename_info.await, opts, done_targets, stats).await }
         })
         .await
 }
