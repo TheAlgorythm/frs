@@ -1,7 +1,7 @@
 # File Rename Search
 
 ![MIT License](https://img.shields.io/github/license/TheAlgorythm/frs?style=for-the-badge&logo=open-source-initiative)
-[![Workflow Status](https://img.shields.io/github/workflow/status/TheAlgorythm/frs/Rust?style=for-the-badge)](https://github.com/TheAlgorythm/frs/actions?query=workflow%3ARust)
+[![Workflow Status](https://img.shields.io/github/actions/workflow/status/TheAlgorythm/frs/check.yml?branch=MAIN&style=for-the-badge)](https://github.com/TheAlgorythm/frs/actions?query=workflow%3ARust)
 [![Crates.io](https://img.shields.io/crates/v/frs?style=for-the-badge&logo=rust)](https://crates.io/crates/frs)
 [![crev reviews](https://web.crev.dev/rust-reviews/badge/crev_count/frs.svg)](https://web.crev.dev/rust-reviews/crate/frs/)
 
