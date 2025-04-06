@@ -47,9 +47,9 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: fmt
-          args: ' --locked -- --check'
+          args: '-- --check'
       - name: Clippy
         uses: actions-rs/cargo@v1
         with:
           command: clippy
-          args: ' --locked -- -D warnings'
+          args: '--locked -- -D warnings'
