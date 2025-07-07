@@ -56,29 +56,35 @@ async fn check_io_error() {
 #[async_std::test]
 async fn already_done_matching_target() {
     let done_path = PathBuf::from("/done");
-    let done_targets = Rc::new(RwLock::new(hashset![
-        done_path.clone(),
-        PathBuf::from("done-2")
-    ]));
+    let done_targets = ManuallyStatic::new(
+        hashset![done_path.clone(), PathBuf::from("done-2")]
+            .into_iter()
+            .collect(),
+    );
 
     assert!(
-        !check_unique_pattern_match(&FileInfo::file(done_path), &empty_replacer(), done_targets)
-            .await
+        !check_unique_pattern_match(
+            &FileInfo::file(done_path),
+            &empty_replacer(),
+            done_targets.get_ref()
+        )
+        .await
     );
 }
 
 #[async_std::test]
 async fn not_done_matching_target() {
-    let done_targets = Rc::new(RwLock::new(hashset![
-        PathBuf::from("/done"),
-        PathBuf::from("done-2")
-    ]));
+    let done_targets = ManuallyStatic::new(
+        hashset![PathBuf::from("/done"), PathBuf::from("done-2")]
+            .into_iter()
+            .collect(),
+    );
 
     assert!(
         check_unique_pattern_match(
             &FileInfo::file(PathBuf::from("/new")),
             &empty_replacer(),
-            done_targets
+            done_targets.get_ref()
         )
         .await
     );
@@ -87,16 +93,17 @@ async fn not_done_matching_target() {
 #[async_std::test]
 async fn already_done_not_matching_target() {
     let done_path = PathBuf::from("/done");
-    let done_targets = Rc::new(RwLock::new(hashset![
-        done_path.clone(),
-        PathBuf::from("done-2")
-    ]));
+    let done_targets = ManuallyStatic::new(
+        hashset![done_path.clone(), PathBuf::from("done-2")]
+            .into_iter()
+            .collect(),
+    );
 
     assert!(
         !check_unique_pattern_match(
             &FileInfo::file(done_path),
             &restrictive_replacer(),
-            done_targets
+            done_targets.get_ref()
         )
         .await
     );
@@ -104,16 +111,17 @@ async fn already_done_not_matching_target() {
 
 #[async_std::test]
 async fn not_done_not_matching_target() {
-    let done_targets = Rc::new(RwLock::new(hashset![
-        PathBuf::from("/done"),
-        PathBuf::from("done-2")
-    ]));
+    let done_targets = ManuallyStatic::new(
+        hashset![PathBuf::from("/done"), PathBuf::from("done-2")]
+            .into_iter()
+            .collect(),
+    );
 
     assert!(
         !check_unique_pattern_match(
             &FileInfo::file(PathBuf::from("/new")),
             &restrictive_replacer(),
-            done_targets
+            done_targets.get_ref()
         )
         .await
     );
@@ -121,16 +129,17 @@ async fn not_done_not_matching_target() {
 
 #[async_std::test]
 async fn pass_matching_error() {
-    let done_targets = Rc::new(RwLock::new(hashset![
-        PathBuf::from("/done"),
-        PathBuf::from("done-2")
-    ]));
+    let done_targets = ManuallyStatic::new(
+        hashset![PathBuf::from("/done"), PathBuf::from("done-2")]
+            .into_iter()
+            .collect(),
+    );
 
     assert!(
         check_unique_pattern_match(
             &FileInfo::file(PathBuf::from("..")),
             &restrictive_replacer(),
-            done_targets
+            done_targets.get_ref()
         )
         .await
     );
@@ -217,32 +226,32 @@ async fn continue_handle_error_on_error() {
 
 #[async_std::test]
 async fn stop_on_error() {
-    let done_targets = Rc::new(RwLock::new(hashset![]));
+    let done_targets = ManuallyStatic::new(DashSet::<PathBuf>::new());
     let cli = empty_cli();
     let files_result = Err(Error::NonExistingParent(PathBuf::from("./old")));
 
     assert_matches!(
-        process_file_rename(files_result, &cli, done_targets, &Stats::new()).await,
+        process_file_rename(files_result, &cli, done_targets.get_ref(), &Stats::new()).await,
         Err(Error::NonExistingParent(_))
     );
 }
 
 #[async_std::test]
 async fn continue_on_error() {
-    let done_targets = Rc::new(RwLock::new(hashset![]));
+    let done_targets = ManuallyStatic::new(DashSet::<PathBuf>::new());
     let mut cli = empty_cli();
     cli.continue_on_error = true;
     let files_result = Err(Error::NonExistingParent(PathBuf::from("./old")));
 
     assert_matches!(
-        process_file_rename(files_result, &cli, done_targets, &Stats::new()).await,
+        process_file_rename(files_result, &cli, done_targets.get_ref(), &Stats::new()).await,
         Ok(())
     );
 }
 
 #[async_std::test]
 async fn add_to_done() {
-    let done_targets = Rc::new(RwLock::new(hashset![]));
+    let done_targets = ManuallyStatic::new(DashSet::<PathBuf>::new());
     let cli = empty_cli();
     let new_path = PathBuf::from("./new");
     let files_result = Ok(RenameInfo {
@@ -251,11 +260,11 @@ async fn add_to_done() {
     });
 
     {
-        let done_targets = done_targets.clone();
+        let done_targets = done_targets.get_ref();
         assert_matches!(
             process_file_rename(files_result, &cli, done_targets, &Stats::new()).await,
             Ok(())
         );
     }
-    assert!(done_targets.read().await.contains(&new_path));
+    assert!(done_targets.get_ref().contains(&new_path));
 }
