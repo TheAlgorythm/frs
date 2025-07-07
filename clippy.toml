@@ -1,1 +1,11 @@
 cognitive-complexity-threshold = 10
+
+disallowed-types = [
+  { path = "std::collections::HashMap", reason = "use the faster `ahash` or concurrent `dashmap` crate instead" },
+  { path = "std::collections::HashSet", reason = "use the faster `ahash` or concurrent `dashmap` crate instead" },
+
+  { path = "std::sync::Mutex", reason = "use the faster `parking_lot` crate instead" },
+  { path = "std::sync::RwLock", reason = "use the faster `parking_lot` crate instead" },
+  { path = "std::sync::Condvar", reason = "use the faster `parking_lot` crate instead" },
+  { path = "std::sync::Once", reason = "use the faster `parking_lot` crate instead" },
+]
